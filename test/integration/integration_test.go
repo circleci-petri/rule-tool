@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-// buildBinary runs 'task build' to build the cursor-rules binary
+// buildBinary runs 'task build' to build the rule-tool binary
 func buildBinary() error {
 	// Get the project root directory (2 levels up from test/integration)
 	wd, err := os.Getwd()

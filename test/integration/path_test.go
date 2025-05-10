@@ -11,13 +11,13 @@ import (
 	"github.com/circleci/llm-agent-rules/internal/config"
 )
 
-// findBinary locates the cursor-rules binary in known locations
+// findBinary locates the rule-tool binary in known locations
 // Returns the path to the binary or an error if not found
 func findBinary() (string, error) {
 	// Determine build output path based on platform
 	goos := runtime.GOOS
 	goarch := runtime.GOARCH
-	binaryName := fmt.Sprintf("cursor-rules-%s-%s", goos, goarch)
+	binaryName := fmt.Sprintf("rule-tool-%s-%s", goos, goarch)
 	if goos == "windows" {
 		binaryName += ".exe"
 	}
@@ -25,8 +25,8 @@ func findBinary() (string, error) {
 	// Look for binary in common locations
 	binaryPaths := []string{
 		filepath.Join("..", "..", "bin", binaryName),                     // From project root /bin dir
-		filepath.Join("..", "..", "cmd", "cursor-rules", "cursor-rules"), // Relative to test/integration
-		filepath.Join(".", "cmd", "cursor-rules", "cursor-rules"),        // From project root
+		filepath.Join("..", "..", "cmd", "rule-tool", "rule-tool"), // Relative to test/integration
+		filepath.Join(".", "cmd", "rule-tool", "rule-tool"),        // From project root
 	}
 
 	// Check common locations
@@ -38,14 +38,14 @@ func findBinary() (string, error) {
 	}
 
 	// Check if binary exists in a CI-provided location
-	ciBinaryPath := os.Getenv("CURSOR_RULES_BINARY_PATH")
+	ciBinaryPath := os.Getenv("RULE_TOOL_BINARY_PATH")
 	if ciBinaryPath != "" {
 		if _, err := os.Stat(ciBinaryPath); err == nil {
 			return ciBinaryPath, nil
 		}
 	}
 
-	return "", fmt.Errorf("cursor-rules binary not found - please run 'task build' first")
+	return "", fmt.Errorf("rule-tool binary not found - please run 'task build' first")
 }
 
 // TestDefaultPathsIntegration tests that the application correctly defaults
@@ -77,7 +77,7 @@ func TestDefaultPathsIntegration(t *testing.T) {
 	}
 
 	// Create a temporary rules directory
-	tempDir, err := os.MkdirTemp("", "cursor-rules-test-*")
+	tempDir, err := os.MkdirTemp("", "rule-tool-test-*")
 	if err != nil {
 		t.Fatalf("Failed to create temp directory: %v", err)
 	}

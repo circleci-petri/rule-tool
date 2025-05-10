@@ -11,18 +11,18 @@ import (
 // Environment variable constants
 const (
 	// EnvRulesPath is the environment variable name for specifying the rules path
-	EnvRulesPath = "CURSOR_RULES_PATH"
+	EnvRulesPath = "RULE_TOOL_PATH"
 	// EnvTargetPath is the environment variable name for specifying the target project path
-	EnvTargetPath = "CURSOR_TARGET_PATH"
+	EnvTargetPath = "RULE_TARGET_PATH"
 )
 
 // Config holds the global application configuration
 type Config struct {
 	// RulesRepoPath is the path to the rules repository
-	RulesRepoPath string `env:"CURSOR_RULES_PATH"`
+	RulesRepoPath string `env:"RULE_TOOL_PATH"`
 
 	// TargetProjectPath is the path to the target project where rules will be linked
-	TargetProjectPath string `env:"CURSOR_TARGET_PATH"`
+	TargetProjectPath string `env:"RULE_TARGET_PATH"`
 }
 
 // New creates a new configuration with default values

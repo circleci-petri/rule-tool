@@ -1,38 +1,37 @@
 # Integration Tests
 
-This directory contains integration tests for the cursor-rules application.
+This directory contains integration tests for the rule-tool application.
 
-## Prerequisites
+## Requirements
 
-Before running these tests, make sure to:
+To run the integration tests, you need:
 
-1. Build the cursor-rules binary (optional, as tests will build it automatically if not found):
-
-   ```bash
-   task build
-   ```
-
-2. The tests will look for the binary in these locations (in order):
-   - `bin/cursor-rules-{GOOS}-{GOARCH}` (platform-specific binary, e.g., cursor-rules-darwin-arm64)
-   - `cmd/cursor-rules/cursor-rules` (relative to project root)
-   - Environment variable `CURSOR_RULES_BINARY_PATH` (if set)
+1. Go 1.20 or higher
+2. The rule-tool binary built and accessible in one of the following locations:
+   - `bin/rule-tool-{GOOS}-{GOARCH}` (platform-specific binary, e.g., rule-tool-darwin-arm64)
+   - `cmd/rule-tool/rule-tool` (relative to project root)
 
 ## Running Tests
 
-To run the integration tests:
+From the project root directory:
 
 ```bash
-go test ./test/integration/...
+go test -v ./test/integration/...
 ```
 
-Note: If the binary is not found, the test will automatically build it using `task build`.
+Or from the test/integration directory:
 
-## CI Integration
+```bash
+cd test/integration
+go test -v ./...
+```
 
-In CI environments, you can:
+## Test Cases
 
-1. Build the binary in an earlier step using `task build`
-2. Set the `CURSOR_RULES_BINARY_PATH` environment variable to point to the built binary
-3. Run the integration tests
+The integration tests verify:
 
-This approach ensures tests use the same binary that will be deployed.
+1. Basic functionality
+2. Command-line flags
+3. Error handling
+4. Rule linking and unlinking
+5. Directory path handling

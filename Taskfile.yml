@@ -1,8 +1,8 @@
 version: "3"
 
 vars:
-  APP_NAME: cursor-rules
-  MAIN_PACKAGE: ./cmd/cursor-rules
+  APP_NAME: rule-tool
+  MAIN_PACKAGE: ./cmd/rule-tool
   BUILD_DIR: ./bin
   VERSION:
     sh: git describe --tags --abbrev=0 2>/dev/null || echo "dev"
