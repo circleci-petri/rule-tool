@@ -1,0 +1,104 @@
+version: "3"
+
+vars:
+  APP_NAME: cursor-rules
+  MAIN_PACKAGE: ./cmd/cursor-rules
+  BUILD_DIR: ./bin
+  VERSION:
+    sh: git describe --tags --abbrev=0 2>/dev/null || echo "dev"
+  GOOS:
+    sh: go env GOOS
+  GOARCH:
+    sh: go env GOARCH
+  GO_BINARY_EXT: '{{if eq .GOOS "windows"}}.exe{{else}}{{end}}'
+  PLATFORM_SUFFIX: "{{.GOOS}}-{{.GOARCH}}"
+
+tasks:
+  build:
+    desc: Build the application
+    cmds:
+      - go build -o {{.BUILD_DIR}}/{{.APP_NAME}}-{{.PLATFORM_SUFFIX}}{{.GO_BINARY_EXT}} {{.MAIN_PACKAGE}}
+
+  run:
+    desc: Run the application
+    cmds:
+      - go run {{.MAIN_PACKAGE}}
+
+  install:
+    desc: Install the application
+    cmds:
+      - go install {{.MAIN_PACKAGE}}
+
+  test:
+    desc: Run tests
+    cmds:
+      - go test -v ./...
+
+  test-junit:
+    desc: Run tests with JUnit XML output
+    cmds:
+      - |
+        if ! command -v gotestsum &>/dev/null; then
+          echo "gotestsum is not installed. Installing..."
+          go install gotest.tools/gotestsum@latest
+        fi
+      - mkdir -p test-results
+      - gotestsum --junitfile test-results/junit.xml -- ./...
+
+  cover:
+    desc: Run tests with coverage
+    cmds:
+      - go test -v -coverprofile=coverage.out ./...
+      - go tool cover -html=coverage.out
+
+  lint:
+    desc: Run linter
+    cmds:
+      - |
+        if ! command -v golangci-lint &>/dev/null; then
+          echo "golangci-lint is not installed. Installing..."
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+        fi
+      - golangci-lint run ./...
+
+  fmt:
+    desc: Format code
+    cmds:
+      - go fmt ./...
+
+  vet:
+    desc: Run go vet
+    cmds:
+      - go vet ./...
+
+  clean:
+    desc: Clean build artifacts
+    cmds:
+      - rm -rf {{.BUILD_DIR}}/*
+      - rm -rf test-results
+
+  check:
+    desc: Run tests and linting
+    deps: [test, lint, vet]
+
+  mod-tidy:
+    desc: Tidy and verify Go modules
+    cmds:
+      - go mod tidy
+      - go mod verify
+
+  default:
+    desc: Display help information
+    cmds:
+      - task -l
+
+  release:
+    desc: Create a new release
+    cmds:
+      - |
+        if [ -z "{{.CLI_ARGS}}" ]; then
+          echo "Please provide a version number: task release -- v1.0.0"
+          exit 1
+        fi
+      - git tag {{.CLI_ARGS}}
+      - git push origin {{.CLI_ARGS}}

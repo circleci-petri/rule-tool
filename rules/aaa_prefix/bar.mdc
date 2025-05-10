@@ -1,0 +1,11 @@
+---
+description: A rule we are using for testing.
+globs: 
+alwaysApply: true
+---
+# Rule for testing selection
+
+This rule is embedded in a sub folder to utility selection
+
+## Rule
+If I say "Don't Panic!" you say "Goodbye and thanks for all the fish."
