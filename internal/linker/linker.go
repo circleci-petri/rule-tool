@@ -108,7 +108,18 @@ func (l *Linker) LinkRule(rule *models.Rule) error {
 		return nil
 	}
 
-	if err := os.Symlink(rule.Path, targetPath); err != nil {
+	// Convert absolute path to relative path for the symlink
+	targetDir := filepath.Dir(targetPath)
+	relPath, err := filepath.Rel(targetDir, rule.Path)
+	if err != nil {
+		return fmt.Errorf("failed to create relative path for symlink: %w", err)
+	}
+
+	if l.Verbose {
+		fmt.Printf("Creating symlink: %s -> %s\n", relPath, targetPath)
+	}
+
+	if err := os.Symlink(relPath, targetPath); err != nil {
 		return fmt.Errorf("failed to create symlink: %w", err)
 	}
 
