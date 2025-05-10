@@ -1,39 +1,49 @@
 #!/bin/bash
 
-# Test script for cursor-rules CLI
+# Test script for rule-tool CLI
 # This script demonstrates how to use the CLI in non-interactive mode for testing
 
-# Set up test paths
-REPO_PATH=$(pwd)
-TARGET_PATH="/tmp/cursor-rules-test"
+set -e
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+REPO_PATH="$SCRIPT_DIR/.."
+TARGET_PATH="/tmp/rule-tool-test"
 
 # Create test target directory
 mkdir -p "$TARGET_PATH"
 echo "Created test target directory: $TARGET_PATH"
 
+# Clean up on exit
+trap "rm -rf $TARGET_PATH" EXIT
+
 # Build the CLI
-echo "Building cursor-rules CLI..."
-go build -o bin/cursor-rules ./cmd/cursor-rules
+echo "Building rule-tool CLI..."
+go build -o bin/rule-tool ./cmd/rule-tool
 
 # List all available rules
 echo -e "\n=== Listing available rules ==="
-./bin/cursor-rules --repo-path="$REPO_PATH" --list
+./bin/rule-tool --repo-path="$REPO_PATH" --list
 
 # Test dry run mode for linking rules
 echo -e "\n=== Testing dry run mode ==="
-./bin/cursor-rules --repo-path="$REPO_PATH" --target-path="$TARGET_PATH" --link="holodeck-engineering,conventional-commits" --dry-run
+./bin/rule-tool --repo-path="$REPO_PATH" --target-path="$TARGET_PATH" --link="holodeck-engineering,conventional-commits" --dry-run
 
 # Link a specific rule
 echo -e "\n=== Linking holodeck-engineering rule ==="
-./bin/cursor-rules --repo-path="$REPO_PATH" --target-path="$TARGET_PATH" --link="holodeck-engineering"
+./bin/rule-tool --repo-path="$REPO_PATH" --target-path="$TARGET_PATH" --link="holodeck-engineering"
 
 # Verify the rule was linked
 echo -e "\n=== Verifying rule was linked ==="
-ls -la "$TARGET_PATH/.cursor/rules/"
+if [ -d "$TARGET_PATH/rules/holodeck-engineering" ]; then
+    echo "  ✅ Rule was linked successfully"
+else
+    echo "  ❌ Rule was not linked"
+    exit 1
+fi
 
 # Unlink the rule
 echo -e "\n=== Unlinking holodeck-engineering rule ==="
-./bin/cursor-rules --repo-path="$REPO_PATH" --target-path="$TARGET_PATH" --unlink="holodeck-engineering"
+./bin/rule-tool --repo-path="$REPO_PATH" --target-path="$TARGET_PATH" --unlink="holodeck-engineering"
 
 # Verify the rule was unlinked
 echo -e "\n=== Verifying rule was unlinked ==="

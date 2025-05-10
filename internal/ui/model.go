@@ -387,7 +387,7 @@ func (m Model) View() string {
 		PaddingRight(2).
 		Width(m.width)
 
-	headerTitle := titleStyle.Render("Cursor Rules CLI")
+	headerTitle := titleStyle.Render("Rule Tool CLI")
 
 	// Status section
 	var status string

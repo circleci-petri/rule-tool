@@ -19,8 +19,8 @@ func main() {
 	cfg := config.New()
 
 	// Parse command-line flags
-	repoPath := flag.String("repo-path", "", "Path to the rules repository (overrides CURSOR_RULES_PATH environment variable if set)")
-	targetPath := flag.String("target-path", "", "Path to the target project (overrides CURSOR_TARGET_PATH environment variable if set)")
+	repoPath := flag.String("repo-path", "", "Path to the rules repository (overrides RULE_TOOL_PATH environment variable if set)")
+	targetPath := flag.String("target-path", "", "Path to the target project (overrides RULE_TARGET_PATH environment variable if set)")
 	nonInteractive := flag.Bool("non-interactive", false, "Run in non-interactive mode")
 	dryRun := flag.Bool("dry-run", false, "Show what would be done without making changes")
 	listRules := flag.Bool("list", false, "List available rules")
@@ -120,7 +120,7 @@ func main() {
 	}
 
 	// Common header
-	fmt.Println(titleStyle.Render("Cursor Rules CLI"))
+	fmt.Println(titleStyle.Render("Rule Tool CLI"))
 	fmt.Println(titleStyle.Render("---------------"))
 	fmt.Printf("Rules repository: %s\n", cfg.RulesRepoPath)
 	fmt.Printf("Target project: %s\n", cfg.TargetProjectPath)
