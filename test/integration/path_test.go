@@ -24,7 +24,7 @@ func findBinary() (string, error) {
 
 	// Look for binary in common locations
 	binaryPaths := []string{
-		filepath.Join("..", "..", "bin", binaryName),                     // From project root /bin dir
+		filepath.Join("..", "..", "bin", binaryName),               // From project root /bin dir
 		filepath.Join("..", "..", "cmd", "rule-tool", "rule-tool"), // Relative to test/integration
 		filepath.Join(".", "cmd", "rule-tool", "rule-tool"),        // From project root
 	}

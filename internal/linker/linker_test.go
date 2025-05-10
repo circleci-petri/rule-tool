@@ -92,17 +92,17 @@ func TestLinkRuleWithRelativePath(t *testing.T) {
 		t.Fatalf("Failed to get current directory: %v", err)
 	}
 	defer os.Chdir(origDir) // Restore original directory when test finishes
-	
+
 	if err := os.Chdir(rulesDir); err != nil {
 		t.Fatalf("Failed to change to rules directory: %v", err)
 	}
-	
+
 	// Create the relative path directories and file
 	relativeDir := "../../some/relative/path"
 	if err := os.MkdirAll(relativeDir, 0755); err != nil {
 		t.Fatalf("Failed to create relative directories: %v", err)
 	}
-	
+
 	relativePath := filepath.Join(relativeDir, "test-rule.mdc")
 	if err := os.WriteFile(relativePath, []byte("test rule content"), 0644); err != nil {
 		t.Fatalf("Failed to create test file: %v", err)
@@ -144,4 +144,4 @@ func TestLinkRuleWithRelativePath(t *testing.T) {
 	if linkTarget != relativePath {
 		t.Errorf("Expected symlink target to be %s, got %s", relativePath, linkTarget)
 	}
-} 
+}
