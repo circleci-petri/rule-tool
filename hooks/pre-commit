@@ -1,0 +1,55 @@
+#!/bin/bash
+
+set -e  # Exit immediately if a command exits with a non-zero status
+
+echo "Running pre-commit hook..."
+
+# Check for uncommitted changes to be added
+if git diff --cached --name-only | grep -q '\.go$'; then
+    echo "Go files found in commit, running build and tests..."
+    
+    # Save the current state of the working directory
+    STASH_NAME="pre-commit-$(date +%s)"
+    git stash push -q --keep-index --include-untracked --message "$STASH_NAME"
+    STASHED=$?
+    
+    # Cleanup function to restore the working directory
+    cleanup() {
+        if [ $STASHED -eq 0 ]; then
+            git stash list | grep -q "$STASH_NAME" && git stash pop -q || true
+        fi
+    }
+    
+    # Ensure cleanup happens even if the script exits with an error
+    trap cleanup EXIT
+    
+    # Check code formatting with gofmt
+    echo "Checking code formatting with gofmt..."
+    GOFMT_FILES=$(gofmt -s -l .)
+    if [ -n "$GOFMT_FILES" ]; then
+        echo "❌ The following files need formatting with gofmt -s:"
+        echo "$GOFMT_FILES"
+        echo "Please run: gofmt -s -w . before committing."
+        exit 1
+    fi
+    
+    # Run build
+    echo "Building code..."
+    if ! go build ./...; then
+        echo "❌ Build failed. Please fix the errors before committing."
+        exit 1
+    fi
+    
+    # Run tests
+    echo "Running tests..."
+    if ! go test ./...; then
+        echo "❌ Tests failed. Please fix the errors before committing."
+        exit 1
+    fi
+    
+    echo "✅ Pre-commit checks passed!"
+else
+    echo "No Go files found in commit, skipping build and tests."
+fi
+
+exit 0 

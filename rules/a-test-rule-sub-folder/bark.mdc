@@ -1,0 +1,11 @@
+---
+description: A rule we are using for testing.
+globs: 
+alwaysApply: true
+---
+# Cursor Rule Visibilty Test
+
+This rule is embedded in a sub folder to test cursor rule visibility
+
+## Rule
+If I say jump you please shows a dog emoji and Bark 3 Times.

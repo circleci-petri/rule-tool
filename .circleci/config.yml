@@ -1,0 +1,106 @@
+version: 2.1
+
+parameters:
+  go-version:
+    type: string
+    default: "1.23"
+
+executors:
+  go-executor:
+    docker:
+      - image: cimg/go:<< pipeline.parameters.go-version >>
+
+jobs:
+  verify:
+    executor: go-executor
+    steps:
+      - checkout
+      - run:
+          name: Install Task
+          command: |
+            sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /tmp
+            sudo mv /tmp/task /usr/local/bin/
+      - run:
+          name: Build
+          command: go build ./...
+      - run:
+          name: Test with JUnit output
+          command: task test-junit
+      - store_test_results:
+          path: test-results
+      - store_artifacts:
+          path: test-results
+          destination: test-results
+      - run:
+          name: Verify formatting
+          command: |
+            if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+              gofmt -s -l .
+              echo "Code is not formatted. Please run 'gofmt -s -w .'"
+              exit 1
+            fi
+
+  build-platform:
+    parameters:
+      goos:
+        type: string
+      goarch:
+        type: string
+    executor: go-executor
+    steps:
+      - checkout
+      - run:
+          name: Install Task
+          command: |
+            sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /tmp
+            sudo mv /tmp/task /usr/local/bin/
+      - run:
+          name: Create build directory
+          command: mkdir -p bin
+      - run:
+          name: Build for << parameters.goos >>/<< parameters.goarch >>
+          command: |
+            # Set binary extension based on OS
+            if [ "<< parameters.goos >>" = "windows" ]; then
+              BINARY_EXT=".exe"
+            else
+              BINARY_EXT=""
+            fi
+            GOOS=<< parameters.goos >> GOARCH=<< parameters.goarch >> GO_BINARY_EXT=${BINARY_EXT} task build
+      - run:
+          name: List built binaries
+          command: ls -la bin
+      - persist_to_workspace:
+          root: .
+          paths:
+            - bin
+
+  collect-artifacts:
+    executor: go-executor
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: List all binaries
+          command: ls -la bin
+      - store_artifacts:
+          path: bin
+          destination: binaries
+
+workflows:
+  build-all-platforms:
+    jobs:
+      - verify
+      - build-platform:
+          requires:
+            - verify
+          matrix:
+            parameters:
+              goos: ["linux", "darwin", "windows"]
+              goarch: ["amd64", "arm64"]
+            exclude:
+              - goos: "windows"
+                goarch: "arm64"
+      - collect-artifacts:
+          requires:
+            - build-platform

@@ -1,0 +1,11 @@
+---
+description: A rule we are using for testing.
+globs: 
+alwaysApply: true
+---
+# Rule for testinf selection
+
+This rule is embedded in a sub folder to utility selection
+
+## Rule
+If I say the number 42 you say "good answer"
