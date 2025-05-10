@@ -68,6 +68,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	// If verbose, show the resolved absolute paths
+	if *verbose {
+		fmt.Printf("Resolved rules path: %s\n", cfg.RulesRepoPath)
+		fmt.Printf("Resolved target path: %s\n", cfg.TargetProjectPath)
+	}
+
 	// Initialize rules manager
 	rulesDir := cfg.GetRulesDir()
 	rulesManager := rules.NewManager(rulesDir)

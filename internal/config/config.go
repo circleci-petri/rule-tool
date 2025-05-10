@@ -41,11 +41,17 @@ func New() *Config {
 	// Default to current working directory for rules repo if not set
 	if cfg.RulesRepoPath == "" {
 		cfg.RulesRepoPath = cwd
+	} else if !filepath.IsAbs(cfg.RulesRepoPath) {
+		// Convert relative path to absolute path
+		cfg.RulesRepoPath = filepath.Join(cwd, cfg.RulesRepoPath)
 	}
 
 	// Default to current working directory for target project if not set
 	if cfg.TargetProjectPath == "" {
 		cfg.TargetProjectPath = cwd
+	} else if !filepath.IsAbs(cfg.TargetProjectPath) {
+		// Convert relative path to absolute path
+		cfg.TargetProjectPath = filepath.Join(cwd, cfg.TargetProjectPath)
 	}
 
 	return &cfg
@@ -53,13 +59,31 @@ func New() *Config {
 
 // SetRulesRepoPath sets the path to the rules repository
 // Command line flags take precedence over environment variables
+// Converts relative paths to absolute paths
 func (c *Config) SetRulesRepoPath(path string) {
+	// Convert relative paths to absolute paths
+	if !filepath.IsAbs(path) {
+		// Get current working directory
+		cwd, err := os.Getwd()
+		if err == nil {
+			path = filepath.Join(cwd, path)
+		}
+	}
 	c.RulesRepoPath = path
 }
 
 // SetTargetProjectPath sets the path to the target project
 // Command line flags take precedence over environment variables
+// Converts relative paths to absolute paths
 func (c *Config) SetTargetProjectPath(path string) {
+	// Convert relative paths to absolute paths
+	if !filepath.IsAbs(path) {
+		// Get current working directory
+		cwd, err := os.Getwd()
+		if err == nil {
+			path = filepath.Join(cwd, path)
+		}
+	}
 	c.TargetProjectPath = path
 }
 
