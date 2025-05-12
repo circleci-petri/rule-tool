@@ -112,7 +112,7 @@ jobs:
             BUILD_DATE=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
             PIPELINE_URL="https://app.circleci.com/pipelines/github/circleci-petri/rule-tool/<< pipeline.number >>"
 
-            cat > release_notes.md << EOF
+            cat > release_notes.md \<< 'EOT'
             # Automated release from CircleCI
 
             **Build Information:**
@@ -120,7 +120,7 @@ jobs:
             - CircleCI Pipeline: [#<< pipeline.number >>](${PIPELINE_URL})
             - Branch: << pipeline.git.branch >>
             - Commit: << pipeline.git.revision >>
-            EOF
+            EOT
 
             # Add note about tag if it exists
             if [ -n "<< pipeline.git.tag >>" ]; then
