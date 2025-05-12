@@ -102,7 +102,7 @@ jobs:
           name: Publish GitHub Release
           command: |
             if [ -z "<< pipeline.git.tag >>" ]; then
-              SHORT_HASH=${<< pipeline.git.revision >>:0:7}
+              SHORT_HASH=$(echo "<< pipeline.git.revision >>" | cut -c1-7)
               TAG="0.0.0-${SHORT_HASH}"
             else
               TAG="<< pipeline.git.tag >>"
