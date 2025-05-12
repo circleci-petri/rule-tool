@@ -87,6 +87,29 @@ jobs:
           path: bin
           destination: binaries
 
+  publish-github-release:
+    docker:
+      - image: cimg/go:<< pipeline.parameters.go-version >>
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Install GitHub CLI
+          command: |
+            type -p gh || (sudo apt-get update && sudo apt-get install -y gh)
+      - run:
+          name: Publish GitHub Release
+          command: |
+            if [ "$CIRCLE_BRANCH" != "trunk" ]; then
+              echo "Not on trunk, skipping release."
+              exit 0
+            fi
+            TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "dev")
+            gh release create "$TAG" ./bin/* --title "$TAG" --notes "Automated release from CircleCI"
+          environment:
+            GITHUB_TOKEN: $GITHUB_TOKEN
+
 workflows:
   build-all-platforms:
     jobs:
@@ -104,3 +127,9 @@ workflows:
       - collect-artifacts:
           requires:
             - build-platform
+      - publish-github-release:
+          requires:
+            - collect-artifacts
+          filters:
+            branches:
+              only: trunk
