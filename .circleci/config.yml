@@ -1,3 +1,6 @@
+orbs:
+  github-cli: circleci/github-cli@2.7.0
+
 version: 2.1
 
 parameters:
@@ -89,22 +92,17 @@ jobs:
 
   publish-github-release:
     docker:
-      - image: cimg/go:<< pipeline.parameters.go-version >>
+      - image: cimg/base:stable
     steps:
       - checkout
       - attach_workspace:
           at: .
-      - run:
-          name: Install GitHub CLI
-          command: |
-            type -p gh || (sudo apt-get update && sudo apt-get install -y gh)
+      - github-cli/setup
       - run:
           name: Publish GitHub Release
           command: |
             TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "dev")
             gh release create "$TAG" ./bin/* --title "$TAG" --notes "Automated release from CircleCI"
-          environment:
-            GITHUB_TOKEN: $GITHUB_TOKEN
 
 workflows:
   build-all-platforms:
@@ -129,3 +127,4 @@ workflows:
           filters:
             branches:
               only: trunk
+          context: rule-tool-trunk
