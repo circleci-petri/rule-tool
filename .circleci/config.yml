@@ -101,7 +101,7 @@ jobs:
       - run:
           name: Publish GitHub Release
           command: |
-            TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "dev")
+            TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "dev-$(git rev-parse --short HEAD)")
             gh release create "$TAG" ./bin/* --title "$TAG" --notes "Automated release from CircleCI"
 
 workflows:
