@@ -101,7 +101,11 @@ jobs:
       - run:
           name: Publish GitHub Release
           command: |
-            TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "dev")
+            if [ -z "<< pipeline.git.tag >>" ]; then
+              TAG="dev-<< pipeline.git.revision >>"
+            else
+              TAG="<< pipeline.git.tag >>"
+            fi
             gh release create "$TAG" ./bin/* --title "$TAG" --notes "Automated release from CircleCI"
 
 workflows:
