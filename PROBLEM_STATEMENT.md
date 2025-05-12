@@ -1,5 +1,7 @@
 # PROBLEM
 
+IMPORTANT: THIS DOCUMENT IS MAINTAINED BY HUMAN ONLY
+
 ## The Personal
 
 * Assumes working with cursor - which doesn't yet have a way to define a 'global' rule repository
