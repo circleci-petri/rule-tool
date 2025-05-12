@@ -101,10 +101,6 @@ jobs:
       - run:
           name: Publish GitHub Release
           command: |
-            if [ "$CIRCLE_BRANCH" != "trunk" ]; then
-              echo "Not on trunk, skipping release."
-              exit 0
-            fi
             TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "dev")
             gh release create "$TAG" ./bin/* --title "$TAG" --notes "Automated release from CircleCI"
           environment:
