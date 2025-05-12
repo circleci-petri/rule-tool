@@ -122,9 +122,9 @@ workflows:
           requires:
             - build-platform
       - publish-github-release:
+          context: rule-tool-trunk
           requires:
             - collect-artifacts
           filters:
             branches:
               only: trunk
-          context: rule-tool-trunk
