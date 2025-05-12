@@ -102,12 +102,32 @@ jobs:
           name: Publish GitHub Release
           command: |
             if [ -z "<< pipeline.git.tag >>" ]; then
-              SHORT_HASH=${<< pipeline.git.revision >>:0:7}
+              SHORT_HASH=$(echo "<< pipeline.git.revision >>" | cut -c1-7)
               TAG="0.0.0-${SHORT_HASH}"
             else
               TAG="<< pipeline.git.tag >>"
             fi
-            gh release create "$TAG" ./bin/* --title "$TAG" --notes "Automated release from CircleCI"
+
+            # Create more informative release notes
+            BUILD_DATE=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+            PIPELINE_URL="https://app.circleci.com/pipelines/github/circleci-petri/rule-tool/<< pipeline.number >>"
+
+            cat > release_notes.md << EOF
+            # Automated release from CircleCI
+
+            **Build Information:**
+            - Build Date: ${BUILD_DATE}
+            - CircleCI Pipeline: [#<< pipeline.number >>](${PIPELINE_URL})
+            - Branch: << pipeline.git.branch >>
+            - Commit: << pipeline.git.revision >>
+            EOF
+
+            # Add note about tag if it exists
+            if [ -n "<< pipeline.git.tag >>" ]; then
+              echo "- Tag: << pipeline.git.tag >>" >> release_notes.md
+            fi
+
+            gh release create "$TAG" ./bin/* --title "$TAG" --notes-file release_notes.md
 
 workflows:
   build-all-platforms:
