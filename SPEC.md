@@ -15,6 +15,7 @@ A CLI tool written in Go using the Charm.sh suite of tools to manage rules acros
 - [x] Create `.cursor/rules` directory if it doesn't exist
 - [x] Basic error handling and validation
 
+Phase 1 is complete.
 ## Technical Implementation
 
 ### Tools & Dependencies
@@ -64,7 +65,7 @@ A CLI tool written in Go using the Charm.sh suite of tools to manage rules acros
 - [x] Initialize Go module
 - [x] Add Charm.sh dependencies
 - [x] Create basic project structure
-- [ ] Write README.md with usage instructions
+- [x] Write README.md with usage instructions
 
 ### Rules Management
 
@@ -72,25 +73,12 @@ A CLI tool written in Go using the Charm.sh suite of tools to manage rules acros
 - [x] Implement rule parsing and loading from local directories
 - [ ] Add validation for rule format
 
-### UI Implementation
-
-- [x] Create list view of available rules
-- [x] Implement selection interface using Bubble Tea
-- [x] Add detailed rule view/information
-- [x] Style UI components with Lip Gloss
-
-### Linking Functionality
-
-- [x] Implement directory creation if needed
-- [x] Create symlink functionality
-- [x] Add validation and error handling for linking
-- [x] Add unlinking/removal functionality
 
 ### Testing
 
-- [ ] Unit tests for rule parsing
-- [ ] Integration tests for linking functionality
-- [ ] Mock testing for UI components
+- [x] Unit tests for rule parsing
+- [x] Integration tests for linking functionality
+- [x] Mock testing for UI components
 
 ### Refinement
 
