@@ -10,12 +10,13 @@ import (
 	"github.com/circleci/llm-agent-rules/pkg/models"
 )
 
-// Linker handles creating symlinks between rules repository and target project
+// Linker handles creating symlinks or copies between rules repository and target project
 type Linker struct {
 	TargetDir string
 	DryRun    bool
 	Verbose   bool
 	Config    *config.Config
+	CopyMode  bool // If true, copy files instead of creating symlinks
 }
 
 // NewLinker creates a new linker for the specified target directory
@@ -25,6 +26,7 @@ func NewLinker(targetDir string) *Linker {
 		DryRun:    false,
 		Verbose:   false,
 		Config:    nil,
+		CopyMode:  false,
 	}
 }
 
@@ -41,6 +43,11 @@ func (l *Linker) SetVerbose(verbose bool) {
 // SetConfig sets the configuration for the linker
 func (l *Linker) SetConfig(cfg *config.Config) {
 	l.Config = cfg
+	
+	// Enable copy mode if using a git repository
+	if cfg != nil && cfg.UseGitRepo {
+		l.CopyMode = true
+	}
 }
 
 // GetRulesDirectory returns the appropriate rules directory path based on configuration
@@ -76,7 +83,7 @@ func (l *Linker) EnsureTargetDirectory() error {
 	return nil
 }
 
-// LinkRule creates a symlink from the rule source to the target directory
+// LinkRule creates a symlink or copy from the rule source to the target directory
 func (l *Linker) LinkRule(rule *models.Rule) error {
 	// Ensure target directory exists
 	if err := l.EnsureTargetDirectory(); err != nil {
@@ -121,35 +128,60 @@ func (l *Linker) LinkRule(rule *models.Rule) error {
 		}
 	}
 
-	// Create symlink
+	// Handle dry run mode
 	if l.DryRun {
 		if l.Verbose {
-			fmt.Printf("Would create symlink: %s -> %s\n", rule.Path, targetPath)
+			if l.CopyMode {
+				fmt.Printf("Would copy file: %s -> %s\n", rule.Path, targetPath)
+			} else {
+				fmt.Printf("Would create symlink: %s -> %s\n", rule.Path, targetPath)
+			}
 		}
 		return nil
 	}
 
-	// Determine symlink path to use
-	var symlinkPath string
-	if filepath.IsAbs(rule.Path) {
-		// For absolute paths, convert to relative path for the symlink
-		targetDir := filepath.Dir(targetPath)
-		relPath, err := filepath.Rel(targetDir, rule.Path)
-		if err != nil {
-			return fmt.Errorf("failed to create relative path for symlink: %w", err)
+	// Determine if we should copy or create a symlink
+	if l.CopyMode {
+		// Copy the file
+		if l.Verbose {
+			fmt.Printf("Copying file: %s -> %s\n", rule.Path, targetPath)
 		}
-		symlinkPath = relPath
+
+		// Read source file
+		sourceContent, err := os.ReadFile(rule.Path)
+		if err != nil {
+			return fmt.Errorf("failed to read source file for copying: %w", err)
+		}
+
+		// Write to target file
+		err = os.WriteFile(targetPath, sourceContent, 0644)
+		if err != nil {
+			return fmt.Errorf("failed to write target file: %w", err)
+		}
 	} else {
-		// For paths that are already relative, use them directly
-		symlinkPath = rule.Path
-	}
+		// Create symlink
+		// Determine symlink path to use
+		var symlinkPath string
+		if filepath.IsAbs(rule.Path) {
+			// For absolute paths, convert to relative path for the symlink
+			targetDir := filepath.Dir(targetPath)
+			relPath, err := filepath.Rel(targetDir, rule.Path)
+			if err != nil {
+				return fmt.Errorf("failed to create relative path for symlink: %w", err)
+			}
+			symlinkPath = relPath
+		} else {
+			// For paths that are already relative, use them directly
+			symlinkPath = rule.Path
+		}
 
-	if l.Verbose {
-		fmt.Printf("Creating symlink: %s -> %s\n", symlinkPath, targetPath)
-	}
+		if l.Verbose {
+			fmt.Printf("Creating symlink: %s -> %s\n", symlinkPath, targetPath)
+		}
 
-	if err := os.Symlink(symlinkPath, targetPath); err != nil {
-		return fmt.Errorf("failed to create symlink: %w", err)
+		if err := os.Symlink(symlinkPath, targetPath); err != nil {
+			return fmt.Errorf("failed to create symlink: %w", err)
+		}
 	}
 
 	return nil
@@ -227,7 +259,7 @@ func (l *Linker) UnlinkRule(ruleName string) error {
 	return fmt.Errorf("rule %s is not linked", ruleName)
 }
 
-// IsRuleLinked checks if a rule is already linked in the target directory
+// IsRuleLinked checks if a rule is already linked or copied in the target directory
 func (l *Linker) IsRuleLinked(rule *models.Rule) bool {
 	var targetFileName string
 
