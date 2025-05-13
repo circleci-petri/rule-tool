@@ -454,20 +454,20 @@ func (m Model) View() string {
 		"• Enter: Toggle selection\n" +
 		"• a: Select all\n" +
 		"• d: Deselect all\n" +
-		"• l: Link selected rules\n" +
+		"• l: Install selected rules\n" +
 		"• /: Filter rules\n" +
 		"• q: Quit"
 
 	// Prepare repository info content
 	infoContent := "Repository Info:\n"
-	
+
 	// Show Git repository URL if using Git
 	if m.config.UseGitRepo {
 		infoContent += "• Git Repo: " + m.config.GitRepoURL + "\n"
 	} else {
 		infoContent += "• Rules: " + rulesRepoPath + "\n"
 	}
-	
+
 	infoContent += "• Target: " + targetPath + "\n\n" +
 		"Indicators:\n" +
 		"• [INSTALLED]: Rule is already installed\n" +
