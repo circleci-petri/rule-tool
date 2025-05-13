@@ -48,10 +48,10 @@ func (r *Repository) Clone() error {
 
 	// Set the clone directory
 	r.CloneDir = tempDir
-	
+
 	// Set the rules path
 	r.RulesPath = filepath.Join(r.CloneDir, ".cursor", "rules")
-	
+
 	return nil
 }
 

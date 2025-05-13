@@ -26,7 +26,7 @@ type Editor string
 
 // Supported editors
 const (
-	EditorCursor  Editor = "cursor"
+	EditorCursor   Editor = "cursor"
 	EditorWindsurf Editor = "windsurf"
 )
 
