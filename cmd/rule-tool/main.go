@@ -21,6 +21,7 @@ func main() {
 	// Parse command-line flags
 	repoPath := flag.String("repo-path", "", "Path to the rules repository (overrides RULE_TOOL_PATH environment variable if set)")
 	targetPath := flag.String("target-path", "", "Path to the target project (overrides RULE_TARGET_PATH environment variable if set)")
+	gitRepoURL := flag.String("git-repo", "", "URL of a Git repository containing rules (overrides RULE_GIT_REPO_URL environment variable if set)")
 	nonInteractive := flag.Bool("non-interactive", false, "Run in non-interactive mode")
 	dryRun := flag.Bool("dry-run", false, "Show what would be done without making changes")
 	listRules := flag.Bool("list", false, "List available rules")
@@ -36,6 +37,11 @@ func main() {
 
 	if *targetPath != "" {
 		cfg.SetTargetProjectPath(*targetPath)
+	}
+
+	// Set Git repository URL if provided
+	if *gitRepoURL != "" {
+		cfg.SetGitRepoURL(*gitRepoURL)
 	}
 
 	// Display configuration source if verbose
@@ -55,14 +61,46 @@ func main() {
 		} else {
 			fmt.Println("Using current directory as target path")
 		}
+
+		if *gitRepoURL != "" {
+			fmt.Println("Using Git repository URL from command line flag")
+		} else if os.Getenv(config.EnvGitRepoURL) != "" {
+			fmt.Printf("Using Git repository URL from %s environment variable\n", config.EnvGitRepoURL)
+		}
 	}
 
-	// Validate paths
-	if !cfg.ValidateRulesRepoPath() {
-		fmt.Printf("Invalid rules repository path: %s\n", cfg.RulesRepoPath)
-		os.Exit(1)
+	// Handle Git repository if URL is provided
+	if cfg.UseGitRepo {
+		fmt.Println("Cloning Git repository...")
+		err := cfg.GitRepo.Clone()
+		if err != nil {
+			fmt.Printf("Error cloning Git repository: %v\n", err)
+			os.Exit(1)
+		}
+
+		// Register cleanup function to remove the cloned repository on exit
+		defer func() {
+			if *verbose {
+				fmt.Println("Cleaning up cloned Git repository...")
+			}
+			err := cfg.GitRepo.Cleanup()
+			if err != nil && *verbose {
+				fmt.Printf("Error cleaning up Git repository: %v\n", err)
+			}
+		}()
+
+		if *verbose {
+			fmt.Printf("Git repository cloned to: %s\n", cfg.GitRepo.CloneDir)
+		}
+	} else {
+		// Validate local rules repository path only if not using Git
+		if !cfg.ValidateRulesRepoPath() {
+			fmt.Printf("Invalid rules repository path: %s\n", cfg.RulesRepoPath)
+			os.Exit(1)
+		}
 	}
 
+	// Validate target project path
 	if !cfg.ValidateTargetProjectPath() {
 		fmt.Printf("Invalid target project path: %s\n", cfg.TargetProjectPath)
 		os.Exit(1)
@@ -70,8 +108,13 @@ func main() {
 
 	// If verbose, show the resolved absolute paths
 	if *verbose {
-		fmt.Printf("Resolved rules path: %s\n", cfg.RulesRepoPath)
+		if !cfg.UseGitRepo {
+			fmt.Printf("Resolved rules path: %s\n", cfg.RulesRepoPath)
+		}
 		fmt.Printf("Resolved target path: %s\n", cfg.TargetProjectPath)
+		if cfg.UseGitRepo {
+			fmt.Printf("Using Git repository: %s\n", cfg.GitRepoURL)
+		}
 	}
 
 	// Initialize rules manager

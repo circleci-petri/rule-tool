@@ -458,9 +458,17 @@ func (m Model) View() string {
 		"• /: Filter rules\n" +
 		"• q: Quit"
 
-	infoContent := "Repository Info:\n" +
-		"• Rules: " + rulesRepoPath + "\n" +
-		"• Target: " + targetPath + "\n\n" +
+	// Prepare repository info content
+	infoContent := "Repository Info:\n"
+	
+	// Show Git repository URL if using Git
+	if m.config.UseGitRepo {
+		infoContent += "• Git Repo: " + m.config.GitRepoURL + "\n"
+	} else {
+		infoContent += "• Rules: " + rulesRepoPath + "\n"
+	}
+	
+	infoContent += "• Target: " + targetPath + "\n\n" +
 		"Indicators:\n" +
 		"• [INSTALLED]: Rule is already installed\n" +
 		"• ✓: Rule is selected for installation"

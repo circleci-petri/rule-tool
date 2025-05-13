@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/sethvargo/go-envconfig"
+	"github.com/circleci/llm-agent-rules/internal/git"
 )
 
 // Environment variable constants
@@ -14,6 +15,8 @@ const (
 	EnvRulesPath = "RULE_TOOL_PATH"
 	// EnvTargetPath is the environment variable name for specifying the target project path
 	EnvTargetPath = "RULE_TARGET_PATH"
+	// EnvGitRepoURL is the environment variable name for specifying the git repository URL
+	EnvGitRepoURL = "RULE_GIT_REPO_URL"
 )
 
 // Config holds the global application configuration
@@ -23,6 +26,15 @@ type Config struct {
 
 	// TargetProjectPath is the path to the target project where rules will be linked
 	TargetProjectPath string `env:"RULE_TARGET_PATH"`
+
+	// GitRepoURL is the URL of the git repository containing the rules
+	GitRepoURL string `env:"RULE_GIT_REPO_URL"`
+
+	// UseGitRepo indicates whether to use the git repository URL instead of local path
+	UseGitRepo bool
+
+	// GitRepo holds the git repository instance when using a git repo
+	GitRepo *git.Repository
 }
 
 // New creates a new configuration with default values
@@ -52,6 +64,12 @@ func New() *Config {
 	} else if !filepath.IsAbs(cfg.TargetProjectPath) {
 		// Convert relative path to absolute path
 		cfg.TargetProjectPath = filepath.Join(cwd, cfg.TargetProjectPath)
+	}
+
+	// Set UseGitRepo flag if GitRepoURL is provided and initialize Git repo
+	if cfg.GitRepoURL != "" {
+		cfg.UseGitRepo = true
+		cfg.GitRepo = git.New(cfg.GitRepoURL)
 	}
 
 	return &cfg
@@ -121,5 +139,20 @@ func (c *Config) ValidateTargetProjectPath() bool {
 
 // GetRulesDir returns the expected directory for rules within the repository
 func (c *Config) GetRulesDir() string {
+	if c.UseGitRepo && c.GitRepo != nil && c.GitRepo.IsCloned() {
+		return c.GitRepo.GetRulesPath()
+	}
 	return filepath.Join(c.RulesRepoPath, "rules")
+}
+
+// SetGitRepoURL sets the URL of the git repository containing the rules
+func (c *Config) SetGitRepoURL(url string) {
+	c.GitRepoURL = url
+	if url != "" {
+		c.UseGitRepo = true
+		c.GitRepo = git.New(url)
+	} else {
+		c.UseGitRepo = false
+		c.GitRepo = nil
+	}
 }
