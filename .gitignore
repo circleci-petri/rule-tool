@@ -26,6 +26,8 @@ go.work
 
 # OS specific
 .DS_Store
-Thumbs.db 
+Thumbs.db
 
 .cursor/rules/
+.roo/
+.roomodes
