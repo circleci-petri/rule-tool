@@ -329,7 +329,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 
 					// Show success message
-					m.successMessage = fmt.Sprintf("✓ Successfully linked %d rules!", len(selected))
+					m.successMessage = fmt.Sprintf("✓ Successfully installed %d rules!", len(selected))
 					m.showingSuccess = true
 
 					// Clear success message after a short delay

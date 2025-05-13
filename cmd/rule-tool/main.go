@@ -27,8 +27,8 @@ func main() {
 	nonInteractive := flag.Bool("non-interactive", false, "Run in non-interactive mode")
 	dryRun := flag.Bool("dry-run", false, "Show what would be done without making changes")
 	listRules := flag.Bool("list", false, "List available rules")
-	linkRule := flag.String("link", "", "Link a specific rule or comma-separated list of rules")
-	unlinkRule := flag.String("unlink", "", "Unlink a specific rule or comma-separated list of rules")
+	linkRule := flag.String("link", "", "Install a specific rule or comma-separated list of rules")
+	unlinkRule := flag.String("unlink", "", "Uninstall a specific rule or comma-separated list of rules")
 	verbose := flag.Bool("verbose", false, "Enable verbose output")
 	flag.Parse()
 
@@ -83,7 +83,7 @@ func main() {
 			fmt.Println("Using default editor: cursor")
 		}
 
-		fmt.Printf("Rules will be linked to: %s\n", filepath.Join(cfg.TargetProjectPath, cfg.GetRulesDirectory()))
+		fmt.Printf("Rules will be installed to: %s\n", filepath.Join(cfg.TargetProjectPath, cfg.GetRulesDirectory()))
 	}
 
 	// Handle Git repository if URL is provided
@@ -231,7 +231,7 @@ func main() {
 		linkerInstance.SetConfig(cfg)
 
 		fmt.Printf("Selected editor: %s\n", cfg.Editor)
-		fmt.Printf("Rules will be linked to: %s\n", filepath.Join(cfg.TargetProjectPath, cfg.GetRulesDirectory()))
+		fmt.Printf("Rules will be installed to: %s\n", filepath.Join(cfg.TargetProjectPath, cfg.GetRulesDirectory()))
 	}
 
 	// Handle non-interactive modes if requested
@@ -265,7 +265,7 @@ func main() {
 					}
 
 					if *dryRun {
-						fmt.Printf("Would link rule: %s\n", ruleName)
+						fmt.Printf("Would install rule: %s\n", ruleName)
 
 						// Display subfolder structure if applicable
 						if rule.Topic != "" && *verbose {
@@ -274,9 +274,9 @@ func main() {
 					} else {
 						err := linkerInstance.LinkRule(rule)
 						if err != nil {
-							fmt.Printf("Error linking rule %s: %v\n", ruleName, err)
+							fmt.Printf("Error installing rule %s: %v\n", ruleName, err)
 						} else {
-							fmt.Printf("Linked rule: %s\n", ruleName)
+							fmt.Printf("Installed rule: %s\n", ruleName)
 						}
 					}
 				} else {
@@ -291,13 +291,13 @@ func main() {
 			for _, ruleName := range rulesToUnlink {
 				ruleName = strings.TrimSpace(ruleName)
 				if *dryRun {
-					fmt.Printf("Would unlink rule: %s\n", ruleName)
+					fmt.Printf("Would uninstall rule: %s\n", ruleName)
 				} else {
 					err := linkerInstance.UnlinkRule(ruleName)
 					if err != nil {
-						fmt.Printf("Error unlinking rule %s: %v\n", ruleName, err)
+						fmt.Printf("Error uninstalling rule %s: %v\n", ruleName, err)
 					} else {
-						fmt.Printf("Unlinked rule: %s\n", ruleName)
+						fmt.Printf("Uninstalled rule: %s\n", ruleName)
 					}
 				}
 			}
