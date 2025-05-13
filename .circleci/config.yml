@@ -111,7 +111,7 @@ jobs:
             # Create more informative release notes
             BUILD_DATE=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
 
-            cat > release_notes.md << EOT
+            cat > release_notes.md \<< EOT
             # Automated release from CircleCI
 
             **Build Information:**
