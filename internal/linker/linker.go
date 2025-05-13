@@ -43,7 +43,7 @@ func (l *Linker) SetVerbose(verbose bool) {
 // SetConfig sets the configuration for the linker
 func (l *Linker) SetConfig(cfg *config.Config) {
 	l.Config = cfg
-	
+
 	// Enable copy mode if using a git repository
 	if cfg != nil && cfg.UseGitRepo {
 		l.CopyMode = true
