@@ -23,7 +23,7 @@ func main() {
 	repoPath := flag.String("repo-path", "", "Path to the rules repository (overrides RULE_TOOL_PATH environment variable if set)")
 	targetPath := flag.String("target-path", "", "Path to the target project (overrides RULE_TARGET_PATH environment variable if set)")
 	gitRepoURL := flag.String("git-repo", "", "URL of a Git repository containing rules (overrides RULE_GIT_REPO_URL environment variable if set)")
-	editor := flag.String("editor", "", "Editor to use (cursor, vscode, neovim, vim) (overrides RULE_EDITOR environment variable if set)")
+	editor := flag.String("editor", "", "Editor to use (cursor, windsurf) (overrides RULE_EDITOR environment variable if set)")
 	nonInteractive := flag.Bool("non-interactive", false, "Run in non-interactive mode")
 	dryRun := flag.Bool("dry-run", false, "Show what would be done without making changes")
 	listRules := flag.Bool("list", false, "List available rules")
