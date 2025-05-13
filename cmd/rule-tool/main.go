@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -22,6 +23,7 @@ func main() {
 	repoPath := flag.String("repo-path", "", "Path to the rules repository (overrides RULE_TOOL_PATH environment variable if set)")
 	targetPath := flag.String("target-path", "", "Path to the target project (overrides RULE_TARGET_PATH environment variable if set)")
 	gitRepoURL := flag.String("git-repo", "", "URL of a Git repository containing rules (overrides RULE_GIT_REPO_URL environment variable if set)")
+	editor := flag.String("editor", "", "Editor to use (cursor, vscode, neovim, vim) (overrides RULE_EDITOR environment variable if set)")
 	nonInteractive := flag.Bool("non-interactive", false, "Run in non-interactive mode")
 	dryRun := flag.Bool("dry-run", false, "Show what would be done without making changes")
 	listRules := flag.Bool("list", false, "List available rules")
@@ -42,6 +44,11 @@ func main() {
 	// Set Git repository URL if provided
 	if *gitRepoURL != "" {
 		cfg.SetGitRepoURL(*gitRepoURL)
+	}
+
+	// Set editor if provided via flag
+	if *editor != "" {
+		cfg.SetEditor(*editor)
 	}
 
 	// Display configuration source if verbose
@@ -67,11 +74,24 @@ func main() {
 		} else if os.Getenv(config.EnvGitRepoURL) != "" {
 			fmt.Printf("Using Git repository URL from %s environment variable\n", config.EnvGitRepoURL)
 		}
+
+		if *editor != "" {
+			fmt.Println("Using editor from command line flag")
+		} else if os.Getenv(config.EnvEditor) != "" {
+			fmt.Printf("Using editor from %s environment variable\n", config.EnvEditor)
+		} else {
+			fmt.Println("Using default editor: cursor")
+		}
+
+		fmt.Printf("Rules will be linked to: %s\n", filepath.Join(cfg.TargetProjectPath, cfg.GetRulesDirectory()))
 	}
 
 	// Handle Git repository if URL is provided
 	if cfg.UseGitRepo {
-		fmt.Println("Cloning Git repository...")
+		if *verbose {
+			fmt.Println("Cloning Git repository...")
+		}
+
 		err := cfg.GitRepo.Clone()
 		if err != nil {
 			fmt.Printf("Error cloning Git repository: %v\n", err)
@@ -135,6 +155,8 @@ func main() {
 
 	// Initialize linker
 	linkerInstance := linker.NewLinker(cfg.TargetProjectPath)
+	// Set the config for the linker
+	linkerInstance.SetConfig(cfg)
 
 	// If dry run is enabled, set it on the linker
 	if *dryRun {
@@ -171,9 +193,46 @@ func main() {
 	// Common header
 	fmt.Println(titleStyle.Render("Rule Tool CLI"))
 	fmt.Println(titleStyle.Render("---------------"))
-	fmt.Printf("Rules repository: %s\n", cfg.RulesRepoPath)
+	// When using a Git repo, show the cloned directory path instead of the local rules repo path
+	if cfg.UseGitRepo && cfg.GitRepo != nil && cfg.GitRepo.IsCloned() {
+		fmt.Printf("Rules repository: %s\n", cfg.GitRepo.CloneDir)
+	} else {
+		fmt.Printf("Rules repository: %s\n", cfg.RulesRepoPath)
+	}
 	fmt.Printf("Target project: %s\n", cfg.TargetProjectPath)
+	fmt.Printf("Editor: %s\n", cfg.Editor)
+	fmt.Printf("Rules directory: %s\n", filepath.Join(cfg.TargetProjectPath, cfg.GetRulesDirectory()))
 	fmt.Printf("Found %d rules\n", len(rulesManager.Rules))
+
+	// If no editor is set and we're in interactive mode, prompt for editor selection
+	if !*nonInteractive && *linkRule == "" && *unlinkRule == "" && !*listRules && *editor == "" && os.Getenv(config.EnvEditor) == "" {
+		// Prompt for editor selection
+		fmt.Println("\nPlease select your editor:")
+		fmt.Println("1. Cursor (default)")
+		fmt.Println("2. Windsurf")
+		fmt.Print("Enter your choice (1-2): ")
+
+		var choice int
+		_, err := fmt.Scanf("%d", &choice)
+		if err != nil || choice < 1 || choice > 2 {
+			// Default to Cursor if invalid input
+			choice = 1
+			fmt.Println("Invalid choice, defaulting to Cursor")
+		}
+
+		switch choice {
+		case 1:
+			cfg.SetEditor(string(config.EditorCursor))
+		case 2:
+			cfg.SetEditor(string(config.EditorWindsurf))
+		}
+
+		// Update the linker with the new config
+		linkerInstance.SetConfig(cfg)
+
+		fmt.Printf("Selected editor: %s\n", cfg.Editor)
+		fmt.Printf("Rules will be linked to: %s\n", filepath.Join(cfg.TargetProjectPath, cfg.GetRulesDirectory()))
+	}
 
 	// Handle non-interactive modes if requested
 	if *nonInteractive || *listRules || *linkRule != "" || *unlinkRule != "" {

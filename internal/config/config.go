@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/sethvargo/go-envconfig"
 	"github.com/circleci/llm-agent-rules/internal/git"
+	"github.com/sethvargo/go-envconfig"
 )
 
 // Environment variable constants
@@ -17,6 +17,17 @@ const (
 	EnvTargetPath = "RULE_TARGET_PATH"
 	// EnvGitRepoURL is the environment variable name for specifying the git repository URL
 	EnvGitRepoURL = "RULE_GIT_REPO_URL"
+	// EnvEditor is the environment variable name for specifying the editor
+	EnvEditor = "RULE_EDITOR"
+)
+
+// Editor represents the code editor being used
+type Editor string
+
+// Supported editors
+const (
+	EditorCursor  Editor = "cursor"
+	EditorWindsurf Editor = "windsurf"
 )
 
 // Config holds the global application configuration
@@ -29,6 +40,9 @@ type Config struct {
 
 	// GitRepoURL is the URL of the git repository containing the rules
 	GitRepoURL string `env:"RULE_GIT_REPO_URL"`
+
+	// Editor is the code editor being used
+	Editor Editor `env:"RULE_EDITOR"`
 
 	// UseGitRepo indicates whether to use the git repository URL instead of local path
 	UseGitRepo bool
@@ -64,6 +78,11 @@ func New() *Config {
 	} else if !filepath.IsAbs(cfg.TargetProjectPath) {
 		// Convert relative path to absolute path
 		cfg.TargetProjectPath = filepath.Join(cwd, cfg.TargetProjectPath)
+	}
+
+	// Default to Cursor editor if not set
+	if cfg.Editor == "" {
+		cfg.Editor = EditorCursor
 	}
 
 	// Set UseGitRepo flag if GitRepoURL is provided and initialize Git repo
@@ -154,5 +173,30 @@ func (c *Config) SetGitRepoURL(url string) {
 	} else {
 		c.UseGitRepo = false
 		c.GitRepo = nil
+	}
+}
+
+// SetEditor sets the editor to use
+func (c *Config) SetEditor(editor string) {
+	switch editor {
+	case string(EditorCursor):
+		c.Editor = EditorCursor
+	case string(EditorWindsurf):
+		c.Editor = EditorWindsurf
+	default:
+		// Default to Cursor if invalid editor is provided
+		c.Editor = EditorCursor
+	}
+}
+
+// GetRulesDirectory returns the directory where rules should be linked based on the editor
+func (c *Config) GetRulesDirectory() string {
+	switch c.Editor {
+	case EditorCursor:
+		return filepath.Join(".cursor", "rules")
+	case EditorWindsurf:
+		return filepath.Join(".windsurf", "rules")
+	default:
+		return filepath.Join(".cursor", "rules")
 	}
 }

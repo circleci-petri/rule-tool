@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/circleci/llm-agent-rules/internal/config"
 	"github.com/circleci/llm-agent-rules/pkg/models"
 )
 
@@ -14,6 +15,7 @@ type Linker struct {
 	TargetDir string
 	DryRun    bool
 	Verbose   bool
+	Config    *config.Config
 }
 
 // NewLinker creates a new linker for the specified target directory
@@ -22,6 +24,7 @@ func NewLinker(targetDir string) *Linker {
 		TargetDir: targetDir,
 		DryRun:    false,
 		Verbose:   false,
+		Config:    nil,
 	}
 }
 
@@ -35,9 +38,24 @@ func (l *Linker) SetVerbose(verbose bool) {
 	l.Verbose = verbose
 }
 
-// EnsureTargetDirectory ensures the .cursor/rules directory exists in the target project
+// SetConfig sets the configuration for the linker
+func (l *Linker) SetConfig(cfg *config.Config) {
+	l.Config = cfg
+}
+
+// GetRulesDirectory returns the appropriate rules directory path based on configuration
+func (l *Linker) GetRulesDirectory() string {
+	if l.Config != nil {
+		return l.Config.GetRulesDirectory()
+	}
+	// Default to .cursor/rules if no config is set
+	return filepath.Join(".cursor", "rules")
+}
+
+// EnsureTargetDirectory ensures the editor-specific rules directory exists in the target project
 func (l *Linker) EnsureTargetDirectory() error {
-	rulesDir := filepath.Join(l.TargetDir, ".cursor", "rules")
+	// Get the rules directory based on the selected editor
+	rulesDir := filepath.Join(l.TargetDir, l.GetRulesDirectory())
 
 	// Check if directory exists
 	if _, err := os.Stat(rulesDir); os.IsNotExist(err) {
@@ -83,8 +101,11 @@ func (l *Linker) LinkRule(rule *models.Rule) error {
 		targetFileName = filepath.Base(rule.Path)
 	}
 
-	// Set the target path in the flat .cursor/rules directory
-	targetPath := filepath.Join(l.TargetDir, ".cursor", "rules", targetFileName)
+	// Get the rules directory based on the selected editor
+	rulesDir := l.GetRulesDirectory()
+
+	// Set the target path in the editor-specific rules directory
+	targetPath := filepath.Join(l.TargetDir, rulesDir, targetFileName)
 
 	// Check if the target already exists
 	if _, err := os.Stat(targetPath); err == nil {
@@ -160,8 +181,11 @@ func (l *Linker) UnlinkRule(ruleName string) error {
 		targetFileName = baseName + ".mdc"
 	}
 
-	// Create the target path in the flat .cursor/rules directory
-	targetPath := filepath.Join(l.TargetDir, ".cursor", "rules", targetFileName)
+	// Get the rules directory based on the selected editor
+	rulesDir := l.GetRulesDirectory()
+
+	// Create the target path in the editor-specific rules directory
+	targetPath := filepath.Join(l.TargetDir, rulesDir, targetFileName)
 
 	// Check if the target exists
 	if _, err := os.Stat(targetPath); err == nil {
@@ -182,7 +206,7 @@ func (l *Linker) UnlinkRule(ruleName string) error {
 
 	// If we didn't find the file with the converted name,
 	// try checking if it's a flat file without path conversion
-	flatPath := filepath.Join(l.TargetDir, ".cursor", "rules", filepath.Base(strings.TrimSuffix(ruleName, filepath.Ext(ruleName)))+".mdc")
+	flatPath := filepath.Join(l.TargetDir, rulesDir, filepath.Base(strings.TrimSuffix(ruleName, filepath.Ext(ruleName)))+".mdc")
 	if flatPath != targetPath {
 		if _, err := os.Stat(flatPath); err == nil {
 			if l.DryRun {
@@ -217,8 +241,11 @@ func (l *Linker) IsRuleLinked(rule *models.Rule) bool {
 		targetFileName = filepath.Base(rule.Path)
 	}
 
-	// Check the target path in the .cursor/rules directory
-	targetPath := filepath.Join(l.TargetDir, ".cursor", "rules", targetFileName)
+	// Get the rules directory based on the selected editor
+	rulesDir := l.GetRulesDirectory()
+
+	// Check the target path in the editor-specific rules directory
+	targetPath := filepath.Join(l.TargetDir, rulesDir, targetFileName)
 
 	// Check if the target exists
 	if _, err := os.Stat(targetPath); err == nil {
@@ -226,7 +253,7 @@ func (l *Linker) IsRuleLinked(rule *models.Rule) bool {
 	}
 
 	// Also check for the old-style flat path (for backward compatibility)
-	flatPath := filepath.Join(l.TargetDir, ".cursor", "rules", filepath.Base(rule.Path))
+	flatPath := filepath.Join(l.TargetDir, rulesDir, filepath.Base(rule.Path))
 	if flatPath != targetPath {
 		if _, err := os.Stat(flatPath); err == nil {
 			return true
