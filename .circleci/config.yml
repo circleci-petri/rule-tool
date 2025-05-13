@@ -103,20 +103,13 @@ jobs:
           command: |
             if [ -z "<< pipeline.git.tag >>" ]; then
               SHORT_HASH=$(echo "<< pipeline.git.revision >>" | cut -c1-7)
-              TAG="0.0.0-${SHORT_HASH}"
+              TAG="0.0.1-${SHORT_HASH}"
             else
               TAG="<< pipeline.git.tag >>"
             fi
 
-            # Create more informative release notes
-            BUILD_DATE=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
-
             cat > release_notes.md \<< EOT
             # Automated release from CircleCI
-
-            **Build Information:**
-            - Build Date: ${BUILD_DATE}
-            - Branch: << pipeline.git.branch >>
             - Commit: << pipeline.git.revision >>
             EOT
 
