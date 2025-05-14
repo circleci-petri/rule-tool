@@ -16,26 +16,12 @@ import (
 
 // Define styles with vibrant colors
 var (
-	// Base styles
-	subtle    = lipgloss.AdaptiveColor{Light: "#D9DCCF", Dark: "#383838"}
-	highlight = lipgloss.AdaptiveColor{Light: "#874BFD", Dark: "#7D56F4"}
-	special   = lipgloss.AdaptiveColor{Light: "#43BF6D", Dark: "#73F59F"}
-
 	// UI element styles
 	titleStyle = lipgloss.NewStyle().
 			Bold(true).
 			Foreground(lipgloss.Color("#FFFFFF")).
 			Background(lipgloss.Color("#8A2BE2")).
 			Padding(0, 1)
-
-	itemStyle = lipgloss.NewStyle().
-			PaddingLeft(4).
-			Foreground(lipgloss.Color("#FFFFFF"))
-
-	selectedItemStyle = lipgloss.NewStyle().
-				PaddingLeft(2).
-				Foreground(lipgloss.Color("#FFFFFF")).
-				Background(lipgloss.Color("#2E8B57"))
 
 	paginationStyle = list.DefaultStyles().PaginationStyle.
 			PaddingLeft(4).
@@ -51,12 +37,6 @@ var (
 			Background(lipgloss.Color("#333333")).
 			Padding(0, 1).
 			Bold(true)
-
-	selectedIndicatorStyle = lipgloss.NewStyle().
-				Foreground(lipgloss.Color("#FFA500"))
-
-	docStyle = lipgloss.NewStyle().
-			Padding(1, 2, 1, 2)
 )
 
 // item represents a rule in the list
@@ -181,11 +161,11 @@ func newItemDelegate() itemDelegate {
 	d.styles.NormalDesc = lipgloss.NewStyle().
 		Foreground(lipgloss.Color("#87CEEB")) // Sky blue
 
-	d.styles.SelectedTitle = d.styles.NormalTitle.Copy().
+	d.styles.SelectedTitle = d.styles.NormalTitle.
 		Background(lipgloss.Color("#4B0082")). // Indigo
 		Foreground(lipgloss.Color("#FFFFFF"))
 
-	d.styles.SelectedDesc = d.styles.NormalDesc.Copy().
+	d.styles.SelectedDesc = d.styles.NormalDesc.
 		Foreground(lipgloss.Color("#FFD700")) // Gold
 
 	d.styles.CheckMark = lipgloss.NewStyle().
@@ -239,7 +219,7 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 // Init initializes the model
 func (m Model) Init() tea.Cmd {
 	// Request initial window size
-	return tea.EnterAltScreen
+	return nil
 }
 
 // Update handles user input and updates the model state
@@ -369,12 +349,7 @@ func (m Model) View() string {
 	// Reserve space for bottom section (about 10 lines)
 	bottomSectionHeight := 6
 	// Calculate remaining space for list view
-	listHeight := availableHeight - headerHeight - statusHeight - bottomSectionHeight - 4 // 4 extra spaces for padding
-
-	// Ensure list height doesn't go below a reasonable minimum
-	if listHeight < 5 {
-		listHeight = 5
-	}
+	listHeight := max(availableHeight-headerHeight-statusHeight-bottomSectionHeight-4, 5)
 
 	// Set the list height dynamically
 	m.list.SetHeight(listHeight)
@@ -413,10 +388,7 @@ func (m Model) View() string {
 	listView := m.list.View()
 
 	// Calculate widths for the bottom panels
-	bottomWidth := m.width - 4
-	if bottomWidth < 40 {
-		bottomWidth = 40
-	}
+	bottomWidth := max(m.width-4, 40)
 
 	leftWidth := bottomWidth / 2
 	rightWidth := bottomWidth - leftWidth
