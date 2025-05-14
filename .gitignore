@@ -29,5 +29,6 @@ go.work
 Thumbs.db
 
 .cursor/rules/
+.windsurf/rules/
 .roo/
 .roomodes
