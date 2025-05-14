@@ -58,27 +58,9 @@ func New(cfg *config.Config, rulesManager *rules.Manager, linker *linker.Linker)
 	// Convert rules to list items with styles
 	items := []list.Item{}
 
-	// Define our item styles
-	normalTitleStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#FF69B4")). // Hot pink for visibility
-		Bold(true)
-
-	normalDescStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#87CEEB")) // Sky blue
-
-	selectedStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#FFD700")) // Gold
-
-	checkmarkStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#00FF00")) // Bright green
-
 	for _, rule := range rulesManager.Rules {
 		items = append(items, item{
-			rule:           rule,
-			titleStyle:     normalTitleStyle,
-			descStyle:      normalDescStyle,
-			selectedStyle:  selectedStyle,
-			checkmarkStyle: checkmarkStyle,
+			rule: rule,
 		})
 	}
 
