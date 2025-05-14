@@ -206,25 +206,14 @@ func main() {
 
 	// If no editor is set and we're in interactive mode, prompt for editor selection
 	if !*nonInteractive && *linkRule == "" && *unlinkRule == "" && !*listRules && *editor == "" && os.Getenv(config.EnvEditor) == "" {
-		// Prompt for editor selection
-		fmt.Println("\nPlease select your editor:")
-		fmt.Println("1. Cursor (default)")
-		fmt.Println("2. Windsurf")
-		fmt.Print("Enter your choice (1-2): ")
-
-		var choice int
-		_, err := fmt.Scanf("%d", &choice)
-		if err != nil || choice < 1 || choice > 2 {
-			// Default to Cursor if invalid input
-			choice = 1
-			fmt.Println("Invalid choice, defaulting to Cursor")
-		}
-
-		switch choice {
-		case 1:
+		// Use bubbletea UI for editor selection
+		selectedEditor, err := ui.RunEditorSelection(cfg)
+		if err != nil {
+			fmt.Printf("Error selecting editor: %v\n", err)
+			// Default to Cursor if there's an error
 			cfg.SetEditor(string(config.EditorCursor))
-		case 2:
-			cfg.SetEditor(string(config.EditorWindsurf))
+		} else {
+			cfg.SetEditor(string(selectedEditor))
 		}
 
 		// Update the linker with the new config
