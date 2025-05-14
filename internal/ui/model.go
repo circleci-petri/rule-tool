@@ -2,7 +2,6 @@ package ui
 
 import (
 	"fmt"
-	"io"
 	"time"
 
 	"github.com/charmbracelet/bubbles/list"
@@ -16,26 +15,12 @@ import (
 
 // Define styles with vibrant colors
 var (
-	// Base styles
-	subtle    = lipgloss.AdaptiveColor{Light: "#D9DCCF", Dark: "#383838"}
-	highlight = lipgloss.AdaptiveColor{Light: "#874BFD", Dark: "#7D56F4"}
-	special   = lipgloss.AdaptiveColor{Light: "#43BF6D", Dark: "#73F59F"}
-
 	// UI element styles
 	titleStyle = lipgloss.NewStyle().
 			Bold(true).
 			Foreground(lipgloss.Color("#FFFFFF")).
 			Background(lipgloss.Color("#8A2BE2")).
 			Padding(0, 1)
-
-	itemStyle = lipgloss.NewStyle().
-			PaddingLeft(4).
-			Foreground(lipgloss.Color("#FFFFFF"))
-
-	selectedItemStyle = lipgloss.NewStyle().
-				PaddingLeft(2).
-				Foreground(lipgloss.Color("#FFFFFF")).
-				Background(lipgloss.Color("#2E8B57"))
 
 	paginationStyle = list.DefaultStyles().PaginationStyle.
 			PaddingLeft(4).
@@ -51,44 +36,7 @@ var (
 			Background(lipgloss.Color("#333333")).
 			Padding(0, 1).
 			Bold(true)
-
-	selectedIndicatorStyle = lipgloss.NewStyle().
-				Foreground(lipgloss.Color("#FFA500"))
-
-	docStyle = lipgloss.NewStyle().
-			Padding(1, 2, 1, 2)
 )
-
-// item represents a rule in the list
-type item struct {
-	rule *models.Rule
-	// Add title and description styles directly
-	titleStyle     lipgloss.Style
-	descStyle      lipgloss.Style
-	selectedStyle  lipgloss.Style
-	checkmarkStyle lipgloss.Style
-}
-
-// FilterValue implements list.Item
-func (i item) FilterValue() string {
-	if i.rule.Topic != "" {
-		return i.rule.Topic + "/" + i.rule.Name
-	}
-	return i.rule.Name
-}
-
-// Title returns the item title
-func (i item) Title() string {
-	if i.rule.Topic != "" {
-		return i.rule.Topic + "/" + i.rule.Name
-	}
-	return i.rule.Name
-}
-
-// Description returns the rule description
-func (i item) Description() string {
-	return i.rule.Description
-}
 
 // Model represents the UI model
 type Model struct {
@@ -110,27 +58,9 @@ func New(cfg *config.Config, rulesManager *rules.Manager, linker *linker.Linker)
 	// Convert rules to list items with styles
 	items := []list.Item{}
 
-	// Define our item styles
-	normalTitleStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#FF69B4")). // Hot pink for visibility
-		Bold(true)
-
-	normalDescStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#87CEEB")) // Sky blue
-
-	selectedStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#FFD700")) // Gold
-
-	checkmarkStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#00FF00")) // Bright green
-
 	for _, rule := range rulesManager.Rules {
 		items = append(items, item{
-			rule:           rule,
-			titleStyle:     normalTitleStyle,
-			descStyle:      normalDescStyle,
-			selectedStyle:  selectedStyle,
-			checkmarkStyle: checkmarkStyle,
+			rule: rule,
 		})
 	}
 
@@ -160,111 +90,20 @@ func New(cfg *config.Config, rulesManager *rules.Manager, linker *linker.Linker)
 	}
 }
 
-// Custom delegate for item rendering
-type itemDelegate struct {
-	styles struct {
-		NormalTitle   lipgloss.Style
-		NormalDesc    lipgloss.Style
-		SelectedTitle lipgloss.Style
-		SelectedDesc  lipgloss.Style
-		CheckMark     lipgloss.Style
-	}
-}
-
-func newItemDelegate() itemDelegate {
-	d := itemDelegate{}
-
-	d.styles.NormalTitle = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#FF69B4")). // Hot pink
-		Bold(true)
-
-	d.styles.NormalDesc = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#87CEEB")) // Sky blue
-
-	d.styles.SelectedTitle = d.styles.NormalTitle.Copy().
-		Background(lipgloss.Color("#4B0082")). // Indigo
-		Foreground(lipgloss.Color("#FFFFFF"))
-
-	d.styles.SelectedDesc = d.styles.NormalDesc.Copy().
-		Foreground(lipgloss.Color("#FFD700")) // Gold
-
-	d.styles.CheckMark = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#00FF00")) // Bright green
-
-	return d
-}
-
-func (d itemDelegate) Height() int                               { return 2 } // Each item takes up 2 lines (title + description)
-func (d itemDelegate) Spacing() int                              { return 1 } // 1 line of spacing between items
-func (d itemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
-
-func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
-	i, ok := listItem.(item)
-	if !ok {
-		return
-	}
-
-	selected := index == m.Index()
-	rule := i.rule
-
-	var title, desc string
-
-	// Format the display name to include topic if present
-	displayName := rule.Name
-	if rule.Topic != "" {
-		displayName = rule.Topic + "/" + rule.Name
-	}
-
-	// Add indentation to align with header
-	indent := "    "
-
-	if selected {
-		title = indent + d.styles.SelectedTitle.Render(displayName)
-		desc = indent + d.styles.SelectedDesc.Render(rule.Description)
-	} else {
-		title = indent + d.styles.NormalTitle.Render(displayName)
-		desc = indent + d.styles.NormalDesc.Render(rule.Description)
-	}
-
-	// Add appropriate indicator based on rule status
-	if rule.IsInstalled {
-		title = title + " [INSTALLED]"
-	} else if rule.Selected {
-		title = title + " ✓"
-	}
-
-	fmt.Fprintf(w, "%s\n%s", title, desc)
-}
-
 // Init initializes the model
-func (m Model) Init() tea.Cmd {
+func (m *Model) Init() tea.Cmd {
 	// Request initial window size
-	return tea.EnterAltScreen
+	return nil
 }
 
 // Update handles user input and updates the model state
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
 
-		// Reserve space for header (1 line)
-		headerHeight := 1
-		// Reserve space for status bar (1 line)
-		statusHeight := 1
-		// Reserve space for bottom section (about 10 lines)
-		bottomSectionHeight := 6
-		// Calculate remaining space for list view
-		listHeight := m.height - headerHeight - statusHeight - bottomSectionHeight - 4 // 4 extra spaces for padding
-
-		// Ensure list height doesn't go below a reasonable minimum
-		if listHeight < 5 {
-			listHeight = 5
-		}
-
-		// Set the list height dynamically
-		m.list.SetHeight(listHeight)
+		m.setListHeight(m.height)
 		m.list.SetWidth(m.width)
 		return m, nil
 
@@ -358,26 +197,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 type tickMsg struct{}
 
 // View renders the UI
-func (m Model) View() string {
-	// Calculate sizes based on available space
-	availableHeight := m.height
-
-	// Reserve space for header (1 line)
-	headerHeight := 1
-	// Reserve space for status bar (1 line)
-	statusHeight := 1
-	// Reserve space for bottom section (about 10 lines)
-	bottomSectionHeight := 6
-	// Calculate remaining space for list view
-	listHeight := availableHeight - headerHeight - statusHeight - bottomSectionHeight - 4 // 4 extra spaces for padding
-
-	// Ensure list height doesn't go below a reasonable minimum
-	if listHeight < 5 {
-		listHeight = 5
-	}
-
-	// Set the list height dynamically
-	m.list.SetHeight(listHeight)
+func (m *Model) View() string {
+	m.setListHeight(m.height)
 
 	// Create header with title
 	titleStyle := lipgloss.NewStyle().
@@ -413,10 +234,7 @@ func (m Model) View() string {
 	listView := m.list.View()
 
 	// Calculate widths for the bottom panels
-	bottomWidth := m.width - 4
-	if bottomWidth < 40 {
-		bottomWidth = 40
-	}
+	bottomWidth := max(m.width-4, 40)
 
 	leftWidth := bottomWidth / 2
 	rightWidth := bottomWidth - leftWidth
@@ -504,4 +322,18 @@ func (m *Model) updateStatusText() string {
 
 	return fmt.Sprintf("%d rules already installed • %d new rules selected",
 		installedCount, newlySelectedCount)
+}
+
+func (m *Model) setListHeight(height int) {
+	// Reserve space for header (1 line)
+	headerHeight := 1
+	// Reserve space for status bar (1 line)
+	statusHeight := 1
+	// Reserve space for bottom section (about 10 lines)
+	bottomSectionHeight := 6
+	// Calculate remaining space for list view
+	listHeight := max(height-headerHeight-statusHeight-bottomSectionHeight-4, 5)
+
+	// Set the list height dynamically
+	m.list.SetHeight(listHeight)
 }
