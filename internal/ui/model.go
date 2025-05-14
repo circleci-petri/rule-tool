@@ -109,34 +109,19 @@ func New(cfg *config.Config, rulesManager *rules.Manager, linker *linker.Linker)
 }
 
 // Init initializes the model
-func (m Model) Init() tea.Cmd {
+func (m *Model) Init() tea.Cmd {
 	// Request initial window size
 	return nil
 }
 
 // Update handles user input and updates the model state
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
 
-		// Reserve space for header (1 line)
-		headerHeight := 1
-		// Reserve space for status bar (1 line)
-		statusHeight := 1
-		// Reserve space for bottom section (about 10 lines)
-		bottomSectionHeight := 6
-		// Calculate remaining space for list view
-		listHeight := m.height - headerHeight - statusHeight - bottomSectionHeight - 4 // 4 extra spaces for padding
-
-		// Ensure list height doesn't go below a reasonable minimum
-		if listHeight < 5 {
-			listHeight = 5
-		}
-
-		// Set the list height dynamically
-		m.list.SetHeight(listHeight)
+		m.setListHeight(m.height)
 		m.list.SetWidth(m.width)
 		return m, nil
 
@@ -230,21 +215,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 type tickMsg struct{}
 
 // View renders the UI
-func (m Model) View() string {
-	// Calculate sizes based on available space
-	availableHeight := m.height
-
-	// Reserve space for header (1 line)
-	headerHeight := 1
-	// Reserve space for status bar (1 line)
-	statusHeight := 1
-	// Reserve space for bottom section (about 10 lines)
-	bottomSectionHeight := 6
-	// Calculate remaining space for list view
-	listHeight := max(availableHeight-headerHeight-statusHeight-bottomSectionHeight-4, 5)
-
-	// Set the list height dynamically
-	m.list.SetHeight(listHeight)
+func (m *Model) View() string {
+	m.setListHeight(m.height)
 
 	// Create header with title
 	titleStyle := lipgloss.NewStyle().
@@ -368,4 +340,18 @@ func (m *Model) updateStatusText() string {
 
 	return fmt.Sprintf("%d rules already installed • %d new rules selected",
 		installedCount, newlySelectedCount)
+}
+
+func (m *Model) setListHeight(height int) {
+	// Reserve space for header (1 line)
+	headerHeight := 1
+	// Reserve space for status bar (1 line)
+	statusHeight := 1
+	// Reserve space for bottom section (about 10 lines)
+	bottomSectionHeight := 6
+	// Calculate remaining space for list view
+	listHeight := max(height-headerHeight-statusHeight-bottomSectionHeight-4, 5)
+
+	// Set the list height dynamically
+	m.list.SetHeight(listHeight)
 }
