@@ -82,5 +82,5 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 		title = title + " ✓"
 	}
 
-	fmt.Fprintf(w, "%s\n%s", title, desc)
+	_, _ = fmt.Fprintf(w, "%s\n%s", title, desc)
 }
