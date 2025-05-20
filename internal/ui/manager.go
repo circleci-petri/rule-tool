@@ -61,7 +61,7 @@ func (m *Manager) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case components.CloseModalMsg:
 		m.showModal = false
-		return m, nil
+		return m, ChangeEditorCmd(string(msg))
 	}
 
 	bg, bgCmd := m.background.Update(msg)
