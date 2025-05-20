@@ -45,7 +45,7 @@ func TestLinkRuleCreatesRelativePath(t *testing.T) {
 	l.SetVerbose(true)
 
 	// Link the rule
-	if err := l.LinkRule(rule); err != nil {
+	if err := l.LinkRule(rule, ".cursor"); err != nil {
 		t.Fatalf("LinkRule failed: %v", err)
 	}
 
@@ -125,7 +125,7 @@ func TestLinkRuleWithRelativePath(t *testing.T) {
 	l.SetVerbose(true)
 
 	// Link the rule
-	if err := l.LinkRule(rule); err != nil {
+	if err := l.LinkRule(rule, ".cursor"); err != nil {
 		t.Fatalf("LinkRule failed: %v", err)
 	}
 

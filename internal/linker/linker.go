@@ -35,9 +35,9 @@ func (l *Linker) SetVerbose(verbose bool) {
 	l.Verbose = verbose
 }
 
-// EnsureTargetDirectory ensures the .cursor/rules directory exists in the target project
-func (l *Linker) EnsureTargetDirectory() error {
-	rulesDir := filepath.Join(l.TargetDir, ".cursor", "rules")
+// EnsureTargetDirectory ensures the specified editor's rules directory exists in the target project
+func (l *Linker) EnsureTargetDirectory(editorFolder string) error {
+	rulesDir := filepath.Join(l.TargetDir, editorFolder, "rules")
 
 	// Check if directory exists
 	if _, err := os.Stat(rulesDir); os.IsNotExist(err) {
@@ -59,9 +59,9 @@ func (l *Linker) EnsureTargetDirectory() error {
 }
 
 // LinkRule creates a symlink from the rule source to the target directory
-func (l *Linker) LinkRule(rule *models.Rule) error {
+func (l *Linker) LinkRule(rule *models.Rule, editorFolder string) error {
 	// Ensure target directory exists
-	if err := l.EnsureTargetDirectory(); err != nil {
+	if err := l.EnsureTargetDirectory(editorFolder); err != nil {
 		return err
 	}
 
@@ -83,8 +83,8 @@ func (l *Linker) LinkRule(rule *models.Rule) error {
 		targetFileName = filepath.Base(rule.Path)
 	}
 
-	// Set the target path in the flat .cursor/rules directory
-	targetPath := filepath.Join(l.TargetDir, ".cursor", "rules", targetFileName)
+	// Set the target path in the specified editor's rules directory
+	targetPath := filepath.Join(l.TargetDir, editorFolder, "rules", targetFileName)
 
 	// Check if the target already exists
 	if _, err := os.Stat(targetPath); err == nil {
@@ -135,9 +135,9 @@ func (l *Linker) LinkRule(rule *models.Rule) error {
 }
 
 // LinkRules creates symlinks for all provided rules
-func (l *Linker) LinkRules(rules []*models.Rule) error {
+func (l *Linker) LinkRules(rules []*models.Rule, editorFolder string) error {
 	for _, rule := range rules {
-		if err := l.LinkRule(rule); err != nil {
+		if err := l.LinkRule(rule, editorFolder); err != nil {
 			return err
 		}
 	}

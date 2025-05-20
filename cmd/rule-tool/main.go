@@ -170,7 +170,7 @@ func main() {
 							fmt.Printf("Would maintain subfolder structure: %s\n", rule.Topic)
 						}
 					} else {
-						err := linkerInstance.LinkRule(rule)
+						err := linkerInstance.LinkRule(rule, ".cursor")
 						if err != nil {
 							fmt.Printf("Error linking rule %s: %v\n", ruleName, err)
 						} else {
