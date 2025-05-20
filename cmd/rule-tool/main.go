@@ -206,6 +206,7 @@ func main() {
 
 	// Interactive mode - Initialize UI model
 	model := ui.New(cfg, rulesManager, linkerInstance)
+	manager := ui.NewManager(model)
 
 	// Log paths for debugging
 	fmt.Printf("Starting UI with Rules repository: %s\n", cfg.RulesRepoPath)
@@ -213,7 +214,7 @@ func main() {
 
 	// Run the application with full screen and mouse support
 	p := tea.NewProgram(
-		model,
+		manager,
 		tea.WithAltScreen(),       // Use alternate screen buffer
 		tea.WithMouseCellMotion(), // Enable mouse support
 	)
