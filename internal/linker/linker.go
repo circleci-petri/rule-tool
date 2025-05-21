@@ -145,7 +145,7 @@ func (l *Linker) LinkRules(rules []*models.Rule, editorFolder string) error {
 }
 
 // UnlinkRule removes a symlink for a rule
-func (l *Linker) UnlinkRule(ruleName string) error {
+func (l *Linker) UnlinkRule(ruleName, editorFolder string) error {
 	// Handle rules with topic paths
 	var targetFileName string
 
@@ -161,7 +161,7 @@ func (l *Linker) UnlinkRule(ruleName string) error {
 	}
 
 	// Create the target path in the flat .cursor/rules directory
-	targetPath := filepath.Join(l.TargetDir, ".cursor", "rules", targetFileName)
+	targetPath := filepath.Join(l.TargetDir, editorFolder, "rules", targetFileName)
 
 	// Check if the target exists
 	if _, err := os.Stat(targetPath); err == nil {
@@ -182,7 +182,7 @@ func (l *Linker) UnlinkRule(ruleName string) error {
 
 	// If we didn't find the file with the converted name,
 	// try checking if it's a flat file without path conversion
-	flatPath := filepath.Join(l.TargetDir, ".cursor", "rules", filepath.Base(strings.TrimSuffix(ruleName, filepath.Ext(ruleName)))+".mdc")
+	flatPath := filepath.Join(l.TargetDir, editorFolder, "rules", filepath.Base(strings.TrimSuffix(ruleName, filepath.Ext(ruleName)))+".mdc")
 	if flatPath != targetPath {
 		if _, err := os.Stat(flatPath); err == nil {
 			if l.DryRun {
@@ -204,7 +204,7 @@ func (l *Linker) UnlinkRule(ruleName string) error {
 }
 
 // IsRuleLinked checks if a rule is already linked in the target directory
-func (l *Linker) IsRuleLinked(rule *models.Rule) bool {
+func (l *Linker) IsRuleLinked(rule *models.Rule, editorFolder string) bool {
 	var targetFileName string
 
 	// If the rule has a topic (is in a subfolder), convert path separators to underscores
@@ -218,7 +218,7 @@ func (l *Linker) IsRuleLinked(rule *models.Rule) bool {
 	}
 
 	// Check the target path in the .cursor/rules directory
-	targetPath := filepath.Join(l.TargetDir, ".cursor", "rules", targetFileName)
+	targetPath := filepath.Join(l.TargetDir, editorFolder, "rules", targetFileName)
 
 	// Check if the target exists
 	if _, err := os.Stat(targetPath); err == nil {
@@ -226,7 +226,7 @@ func (l *Linker) IsRuleLinked(rule *models.Rule) bool {
 	}
 
 	// Also check for the old-style flat path (for backward compatibility)
-	flatPath := filepath.Join(l.TargetDir, ".cursor", "rules", filepath.Base(rule.Path))
+	flatPath := filepath.Join(l.TargetDir, editorFolder, "rules", filepath.Base(rule.Path))
 	if flatPath != targetPath {
 		if _, err := os.Stat(flatPath); err == nil {
 			return true

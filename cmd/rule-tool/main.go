@@ -105,7 +105,7 @@ func main() {
 
 	// Check which rules are already installed and mark them as selected
 	for _, rule := range rulesManager.Rules {
-		rule.IsInstalled = linkerInstance.IsRuleLinked(rule)
+		rule.IsInstalled = linkerInstance.IsRuleLinked(rule, ".cursor")
 		// Initialize Selected to match IsInstalled as a starting point
 		rule.Selected = rule.IsInstalled
 	}
@@ -191,7 +191,7 @@ func main() {
 				if *dryRun {
 					fmt.Printf("Would unlink rule: %s\n", ruleName)
 				} else {
-					err := linkerInstance.UnlinkRule(ruleName)
+					err := linkerInstance.UnlinkRule(ruleName, ".cursor")
 					if err != nil {
 						fmt.Printf("Error unlinking rule %s: %v\n", ruleName, err)
 					} else {
