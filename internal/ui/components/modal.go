@@ -42,7 +42,7 @@ type Modal struct {
 }
 
 // NewModal creates a new modal with the given title and message,
-// and with Yes and No buttons.
+// and buttons.
 func NewModal(title, message string, buttons []string) *Modal {
 	if len(buttons) == 0 || buttons == nil {
 		buttons = []string{"Yes", "No"}
