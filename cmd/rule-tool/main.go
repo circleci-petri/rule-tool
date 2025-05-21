@@ -105,7 +105,7 @@ func main() {
 
 	// Check which rules are already installed and mark them as selected
 	for _, rule := range rulesManager.Rules {
-		rule.IsInstalled = linkerInstance.IsRuleLinked(rule)
+		rule.IsInstalled = linkerInstance.IsRuleLinked(rule, ".cursor")
 		// Initialize Selected to match IsInstalled as a starting point
 		rule.Selected = rule.IsInstalled
 	}
@@ -170,7 +170,7 @@ func main() {
 							fmt.Printf("Would maintain subfolder structure: %s\n", rule.Topic)
 						}
 					} else {
-						err := linkerInstance.LinkRule(rule)
+						err := linkerInstance.LinkRule(rule, ".cursor")
 						if err != nil {
 							fmt.Printf("Error linking rule %s: %v\n", ruleName, err)
 						} else {
@@ -191,7 +191,7 @@ func main() {
 				if *dryRun {
 					fmt.Printf("Would unlink rule: %s\n", ruleName)
 				} else {
-					err := linkerInstance.UnlinkRule(ruleName)
+					err := linkerInstance.UnlinkRule(ruleName, ".cursor")
 					if err != nil {
 						fmt.Printf("Error unlinking rule %s: %v\n", ruleName, err)
 					} else {
@@ -206,6 +206,7 @@ func main() {
 
 	// Interactive mode - Initialize UI model
 	model := ui.New(cfg, rulesManager, linkerInstance)
+	manager := ui.NewManager(model)
 
 	// Log paths for debugging
 	fmt.Printf("Starting UI with Rules repository: %s\n", cfg.RulesRepoPath)
@@ -213,7 +214,7 @@ func main() {
 
 	// Run the application with full screen and mouse support
 	p := tea.NewProgram(
-		model,
+		manager,
 		tea.WithAltScreen(),       // Use alternate screen buffer
 		tea.WithMouseCellMotion(), // Enable mouse support
 	)

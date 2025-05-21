@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/charmbracelet/bubbles/list"
@@ -12,6 +13,14 @@ import (
 	"github.com/circleci/llm-agent-rules/internal/rules"
 	"github.com/circleci/llm-agent-rules/pkg/models"
 )
+
+type ChangeEditorMsg string
+
+func ChangeEditorCmd(editor string) tea.Cmd {
+	return func() tea.Msg {
+		return ChangeEditorMsg(editor)
+	}
+}
 
 // Define styles with vibrant colors
 var (
@@ -51,6 +60,7 @@ type Model struct {
 	successMessage string
 	showingSuccess bool
 	successTimer   int
+	editor         string // Stores the selected editor
 }
 
 // New creates a new UI model
@@ -87,6 +97,7 @@ func New(cfg *config.Config, rulesManager *rules.Manager, linker *linker.Linker)
 		successMessage: "",
 		showingSuccess: false,
 		successTimer:   0,
+		editor:         "Cursor (default)", // Default editor value
 	}
 }
 
@@ -105,6 +116,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		m.setListHeight(m.height)
 		m.list.SetWidth(m.width)
+		return m, nil
+
+	case ChangeEditorMsg:
+		// Store the selected editor in the model
+		m.editor = string(msg)
 		return m, nil
 
 	case tea.KeyMsg:
@@ -158,7 +174,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Link selected rules
 			selected := m.rulesManager.GetSelectedRules()
 			if len(selected) > 0 {
-				err := m.linker.LinkRules(selected)
+				err := m.linker.LinkRules(selected, m.getEditorPathName())
 				if err != nil {
 					m.err = err
 				} else {
@@ -256,36 +272,9 @@ func (m *Model) View() string {
 		Padding(1, 3, 1, 3).
 		Width(rightWidth)
 
-	// Get paths for display and ensure they're not empty
-	rulesRepoPath := m.config.RulesRepoPath
-	if rulesRepoPath == "" {
-		rulesRepoPath = "Not set"
-	}
-
-	targetPath := m.config.TargetProjectPath
-	if targetPath == "" {
-		targetPath = "Not set"
-	}
-
-	// Create content for both bottom panels
-	helpContent := "Controls:\n" +
-		"• Enter: Toggle selection\n" +
-		"• a: Select all\n" +
-		"• d: Deselect all\n" +
-		"• l: Link selected rules\n" +
-		"• /: Filter rules\n" +
-		"• q: Quit"
-
-	infoContent := "Repository Info:\n" +
-		"• Rules: " + rulesRepoPath + "\n" +
-		"• Target: " + targetPath + "\n\n" +
-		"Indicators:\n" +
-		"• [INSTALLED]: Rule is already installed\n" +
-		"• ✓: Rule is selected for installation"
-
 	// Render both panels
-	helpSection := helpStyle.Render(helpContent)
-	infoSection := infoStyle.Render(infoContent)
+	helpSection := helpStyle.Render(m.createHelpContent())
+	infoSection := infoStyle.Render(m.createInfoContent())
 
 	// Join the bottom panels horizontally
 	bottomSection := lipgloss.JoinHorizontal(lipgloss.Top, helpSection, infoSection)
@@ -336,4 +325,58 @@ func (m *Model) setListHeight(height int) {
 
 	// Set the list height dynamically
 	m.list.SetHeight(listHeight)
+}
+
+func (m *Model) createInfoContent() string {
+	// Get paths for display and ensure they're not empty
+	rulesRepoPath := m.config.RulesRepoPath
+	if rulesRepoPath == "" {
+		rulesRepoPath = "Not set"
+	}
+
+	targetPath := m.config.TargetProjectPath
+	if targetPath == "" {
+		targetPath = "Not set"
+	}
+
+	var infoBuilder strings.Builder
+	infoBuilder.WriteString("Repository Info:\n")
+	infoBuilder.WriteString("• Rules: ")
+	infoBuilder.WriteString(rulesRepoPath)
+	infoBuilder.WriteString("\n")
+	infoBuilder.WriteString("• Target: ")
+	infoBuilder.WriteString(targetPath)
+	infoBuilder.WriteString("\n")
+	infoBuilder.WriteString("• Editor: ")
+	infoBuilder.WriteString(m.editor)
+	infoBuilder.WriteString("\n\n")
+	infoBuilder.WriteString("Indicators:\n")
+	infoBuilder.WriteString("• [INSTALLED]: Rule is already installed\n")
+	infoBuilder.WriteString("• ✓: Rule is selected for installation")
+
+	return infoBuilder.String()
+}
+
+func (m *Model) createHelpContent() string {
+	// Create content for both bottom panels
+	return "Controls:\n" +
+		"• Enter: Toggle selection\n" +
+		"• a: Select all\n" +
+		"• d: Deselect all\n" +
+		"• l: Link selected rules\n" +
+		"• /: Filter rules\n" +
+		"• q: Quit"
+}
+
+func (m *Model) getEditorPathName() string {
+	var editor string
+	if strings.Contains(m.editor, "(default)") {
+		editor = strings.Replace(m.editor, " (default)", "", -1)
+	} else {
+		editor = m.editor
+	}
+
+	editor = strings.ToLower(editor)
+
+	return fmt.Sprintf(".%s", editor)
 }
