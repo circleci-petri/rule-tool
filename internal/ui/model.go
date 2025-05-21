@@ -369,7 +369,14 @@ func (m *Model) createHelpContent() string {
 }
 
 func (m *Model) getEditorPathName() string {
-	editor := strings.ToLower(m.editor)
+	var editor string
+	if strings.Contains(m.editor, "(default)") {
+		editor = strings.Replace(m.editor, " (default)", "", -1)
+	} else {
+		editor = m.editor
+	}
+
+	editor = strings.ToLower(editor)
 
 	return fmt.Sprintf(".%s", editor)
 }
