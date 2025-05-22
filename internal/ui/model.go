@@ -363,6 +363,7 @@ func (m *Model) createHelpContent() string {
 		"• Enter: Toggle selection\n" +
 		"• a: Select all\n" +
 		"• d: Deselect all\n" +
+		"• e: Open editor modal\n" +
 		"• l: Link selected rules\n" +
 		"• /: Filter rules\n" +
 		"• q: Quit"
