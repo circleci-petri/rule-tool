@@ -15,8 +15,7 @@ var (
 			Width(50)
 
 	buttonStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#000000")).
-			Background(lipgloss.Color("#5f5fd7")).
+			Foreground(lipgloss.Color("#FFFFFF")).
 			Padding(0, 1)
 
 	activeButtonStyle = lipgloss.NewStyle().
