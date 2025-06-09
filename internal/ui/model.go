@@ -22,27 +22,27 @@ func ChangeEditorCmd(editor string) tea.Cmd {
 	}
 }
 
-// Define styles with vibrant colors
+// Define styles with CRT monitor amber/orange theme
 var (
-	// UI element styles
+	// UI element styles - CRT amber on black
 	titleStyle = lipgloss.NewStyle().
 			Bold(true).
-			Foreground(lipgloss.Color("#FFFFFF")).
-			Background(lipgloss.Color("#8A2BE2")).
+			Foreground(lipgloss.Color("#FFA500")).
+			Background(lipgloss.Color("#000000")).
 			Padding(0, 1)
 
 	paginationStyle = list.DefaultStyles().PaginationStyle.
 			PaddingLeft(4).
-			Foreground(lipgloss.Color("#FFFF00"))
+			Foreground(lipgloss.Color("#FF8C00"))
 
 	helpStyle = list.DefaultStyles().HelpStyle.
 			PaddingLeft(4).
 			PaddingBottom(1).
-			Foreground(lipgloss.Color("#00FFFF"))
+			Foreground(lipgloss.Color("#FFB347"))
 
 	statusStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#FFFFFF")).
-			Background(lipgloss.Color("#333333")).
+			Foreground(lipgloss.Color("#FFA500")).
+			Background(lipgloss.Color("#000000")).
 			Padding(0, 1).
 			Bold(true)
 )
@@ -219,8 +219,8 @@ func (m *Model) View() string {
 	// Create header with title
 	titleStyle := lipgloss.NewStyle().
 		Bold(true).
-		Foreground(lipgloss.Color("#FFFFFF")).
-		Background(lipgloss.Color("#333333")).
+		Foreground(lipgloss.Color("#FFA500")).
+		Background(lipgloss.Color("#000000")).
 		PaddingRight(2).
 		Width(m.width)
 
@@ -231,14 +231,14 @@ func (m *Model) View() string {
 
 	if m.err != nil {
 		errorStyle := lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#FF0000")).
+			Foreground(lipgloss.Color("#FF6600")).
 			Bold(true).
 			Padding(0, 1)
 		status = errorStyle.Render(fmt.Sprintf("Error: %v", m.err))
 	} else if m.showingSuccess && m.successMessage != "" {
 		// Show success message with a highlighted style
 		successStyle := lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#00FF00")).
+			Foreground(lipgloss.Color("#FFD700")).
 			Bold(true).
 			Padding(0, 1)
 		status = successStyle.Render(m.successMessage)
@@ -257,18 +257,18 @@ func (m *Model) View() string {
 
 	// Style for the help/controls section (left side)
 	helpStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#FFFF00")).
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color("#666666")).
+		Foreground(lipgloss.Color("#FFB347")).
+		Border(lipgloss.NormalBorder()).
+		BorderForeground(lipgloss.Color("#FF8C00")).
 		Padding(1, 2).
 		Width(leftWidth)
 
 	// Style for the repository info section (right side)
 	infoStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#FFFFFF")).
-		Background(lipgloss.Color("#0000AA")).
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color("#666666")).
+		Foreground(lipgloss.Color("#FFA500")).
+		Background(lipgloss.Color("#000000")).
+		Border(lipgloss.NormalBorder()).
+		BorderForeground(lipgloss.Color("#FF8C00")).
 		Padding(1, 3, 1, 3).
 		Width(rightWidth)
 

@@ -9,18 +9,18 @@ import (
 
 var (
 	modalStyle = lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(lipgloss.Color("170")).
+			Border(lipgloss.NormalBorder()).
+			BorderForeground(lipgloss.Color("#FF8C00")).
 			Padding(1, 2).
 			Width(50)
 
 	buttonStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#FFFFFF")).
+			Foreground(lipgloss.Color("#FFB347")).
 			Padding(0, 1)
 
 	activeButtonStyle = lipgloss.NewStyle().
 				Foreground(lipgloss.Color("#000000")).
-				Background(lipgloss.Color("#d75fd7"))
+				Background(lipgloss.Color("#FFA500"))
 )
 
 type CloseModalMsg string

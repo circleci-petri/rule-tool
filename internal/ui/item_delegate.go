@@ -24,21 +24,21 @@ func newItemDelegate() itemDelegate {
 	d := itemDelegate{}
 
 	d.styles.NormalTitle = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#FF69B4")). // Hot pink
+		Foreground(lipgloss.Color("#FFA500")). // Orange amber
 		Bold(true)
 
 	d.styles.NormalDesc = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#87CEEB")) // Sky blue
+		Foreground(lipgloss.Color("#FFB347")) // Light orange
 
 	d.styles.SelectedTitle = d.styles.NormalTitle.
-		Background(lipgloss.Color("#4B0082")). // Indigo
-		Foreground(lipgloss.Color("#FFFFFF"))
+		Background(lipgloss.Color("#3D2914")). // Dark amber
+		Foreground(lipgloss.Color("#FFD700"))  // Gold
 
 	d.styles.SelectedDesc = d.styles.NormalDesc.
-		Foreground(lipgloss.Color("#FFD700")) // Gold
+		Foreground(lipgloss.Color("#FF8C00")) // Dark orange
 
 	d.styles.CheckMark = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#00FF00")) // Bright green
+		Foreground(lipgloss.Color("#FFD700")) // Gold
 
 	return d
 }
